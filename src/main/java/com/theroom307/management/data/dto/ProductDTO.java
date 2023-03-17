@@ -9,7 +9,6 @@ public record ProductDTO(
         long id,
         String name,
         String description,
-        float price,
         String created,
         String modified
 ) {
@@ -20,7 +19,6 @@ public record ProductDTO(
                 entity.getId(),
                 entity.getName(),
                 entity.getDescription(),
-                entity.getPrice(),
                 dateTimeToString(entity.getCreated()),
                 dateTimeToString(entity.getModified())
         );
@@ -33,7 +31,6 @@ public record ProductDTO(
         entity.setDescription(description);
         entity.setCreated(stringToDateTime(created));
         entity.setModified(stringToDateTime(modified));
-        entity.setPrice(price);
         return entity;
     }
 

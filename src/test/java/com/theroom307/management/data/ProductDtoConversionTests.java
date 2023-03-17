@@ -36,7 +36,6 @@ class ProductDtoConversionTests {
                 123L,
                 "product name",
                 "product description",
-                456.78F,
                 "2023-03-12T18:23:01Z",
                 "2023-03-12T18:24:59Z"
         );
@@ -47,7 +46,6 @@ class ProductDtoConversionTests {
         entity.setId(123L);
         entity.setName("product name");
         entity.setDescription("product description");
-        entity.setPrice(456.78F);
         entity.setCreated(ZonedDateTime.parse("2023-03-12T18:23:01Z", DATE_TIME_FORMATTER));
         entity.setModified(ZonedDateTime.parse("2023-03-12T18:24:59Z", DATE_TIME_FORMATTER));
         return entity;
