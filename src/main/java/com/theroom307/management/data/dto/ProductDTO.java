@@ -6,7 +6,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
 public record ProductDTO(
-        long id,
+        Long id,
         String name,
         String description,
         String created,
