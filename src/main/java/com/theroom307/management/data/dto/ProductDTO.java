@@ -1,26 +1,27 @@
 package com.theroom307.management.data.dto;
 
 import com.theroom307.management.data.model.Product;
+import lombok.With;
 
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
+@With
 public record ProductDTO(
-        long id,
+        Long id,
         String name,
         String description,
-        float price,
         String created,
         String modified
 ) {
-    public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ISO_DATE_TIME;
+    public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ISO_INSTANT.withZone(ZoneOffset.UTC);
 
     public static ProductDTO fromEntity(Product entity) {
         return new ProductDTO(
                 entity.getId(),
                 entity.getName(),
                 entity.getDescription(),
-                entity.getPrice(),
                 dateTimeToString(entity.getCreated()),
                 dateTimeToString(entity.getModified())
         );
@@ -33,14 +34,13 @@ public record ProductDTO(
         entity.setDescription(description);
         entity.setCreated(stringToDateTime(created));
         entity.setModified(stringToDateTime(modified));
-        entity.setPrice(price);
         return entity;
     }
 
     private static String dateTimeToString(ZonedDateTime dateTime) {
         return dateTime == null
                 ? null
-                : dateTime.format(DATE_TIME_FORMATTER);
+                : DATE_TIME_FORMATTER.format(dateTime.withNano(0));
     }
 
     private static ZonedDateTime stringToDateTime(String timestamp) {

@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.StreamSupport;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,7 +22,7 @@ public class ManagementController {
     @GetMapping(PRODUCT_ENDPOINT)
     public List<ProductDTO> getProducts() {
         var allProducts = productRepository.findAll();
-        return allProducts.stream()
+        return StreamSupport.stream(allProducts.spliterator(), false)
                 .map(ProductDTO::fromEntity)
                 .toList();
     }
