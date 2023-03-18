@@ -1,4 +1,4 @@
-package com.theroom307.management.controller.managementcontroller;
+package com.theroom307.management.unittests.controller.managementcontroller;
 
 import com.theroom307.management.controller.ManagementController;
 import com.theroom307.management.data.repository.ProductRepository;
@@ -66,7 +66,8 @@ class ProductEndpointTests {
         this.mockMvc
                 .perform(delete(ENDPOINT))
                 .andDo(print())
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").doesNotExist());
 
         verify(productRepository).deleteById(VALID_PRODUCT_ID);
     }

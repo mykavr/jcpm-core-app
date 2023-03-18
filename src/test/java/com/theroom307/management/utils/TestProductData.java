@@ -32,7 +32,7 @@ public class TestProductData {
     }
 
     @SneakyThrows(JsonProcessingException.class)
-    private static String getProductDtoAsString(ProductDTO productDTO) {
+    public static String getProductDtoAsString(ProductDTO productDTO) {
         return new ObjectMapper()
                 .setSerializationInclusion(Include.NON_NULL)
                 .writeValueAsString(productDTO);

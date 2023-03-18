@@ -1,10 +1,13 @@
-package com.theroom307.management.data;
+package com.theroom307.management.unittests.data;
 
 import com.theroom307.management.data.dto.ProductDTO;
 import org.junit.jupiter.api.Test;
 
-import static com.theroom307.management.utils.TestProductData.getProductDto;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+
 import static com.theroom307.management.utils.TestProductData.getProduct;
+import static com.theroom307.management.utils.TestProductData.getProductDto;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ProductDtoConversionTests {
@@ -27,6 +30,22 @@ class ProductDtoConversionTests {
         assertThat(resultProductDTO)
                 .as("Product entity should be properly converted to a ProductDTO instance")
                 .isEqualTo(getProductDto());
+    }
+
+    @Test
+    void omitMillisecondsInProductDto() {
+        var dateTime = ZonedDateTime.of(2023, 3, 18,
+                18, 28, 3, 999999999, ZoneOffset.UTC);
+        var expectedTimestamp = "2023-03-18T18:28:03Z";
+
+        var product = getProduct();
+        product.setCreated(dateTime);
+        product.setModified(dateTime);
+
+        assertThat(ProductDTO.fromEntity(product))
+                .as("Milli- and nanoseconds should be skipped")
+                .hasFieldOrPropertyWithValue("created", expectedTimestamp)
+                .hasFieldOrPropertyWithValue("modified", expectedTimestamp);
     }
 
 }
