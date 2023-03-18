@@ -17,6 +17,16 @@ public class TestProductData {
 
     public static final Long VALID_PRODUCT_ID = Long.MAX_VALUE;
 
+    public static Product getProduct() {
+        var entity = new Product();
+        entity.setId(123L);
+        entity.setName("product name");
+        entity.setDescription("product description");
+        entity.setCreated(ZonedDateTime.parse("2023-03-12T18:23:01Z", DATE_TIME_FORMATTER));
+        entity.setModified(ZonedDateTime.parse("2023-03-12T18:24:59Z", DATE_TIME_FORMATTER));
+        return entity;
+    }
+
     public static ProductDTO getProductDto() {
         return new ProductDTO(
                 123L,
@@ -39,25 +49,11 @@ public class TestProductData {
     }
 
     public static String getProductDtoToCreateProduct() {
-        var template = getProductDto();
-        var productDto = new ProductDTO(
-                null,
-                template.name(),
-                template.description(),
-                null,
-                null
-        );
+        var productDto = getProductDto()
+                .withId(null)
+                .withCreated(null)
+                .withModified(null);
         return getProductDtoAsString(productDto);
-    }
-
-    public static Product getProduct() {
-        var entity = new Product();
-        entity.setId(123L);
-        entity.setName("product name");
-        entity.setDescription("product description");
-        entity.setCreated(ZonedDateTime.parse("2023-03-12T18:23:01Z", DATE_TIME_FORMATTER));
-        entity.setModified(ZonedDateTime.parse("2023-03-12T18:24:59Z", DATE_TIME_FORMATTER));
-        return entity;
     }
 
     public static Product getProductToCreate() {
