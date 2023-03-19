@@ -1,6 +1,6 @@
 package com.theroom307.management.unittests.controller.managementcontroller;
 
-import com.theroom307.management.controller.ManagementController;
+import com.theroom307.management.controller.ProductController;
 import com.theroom307.management.data.model.Product;
 import com.theroom307.management.data.repository.ProductRepository;
 import org.junit.jupiter.api.Test;
@@ -20,10 +20,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(ManagementController.class)
+@WebMvcTest(ProductController.class)
 class ProductsEndpointTests {
 
-    private final static String ENDPOINT = "/product";
+    private final static String ENDPOINT = "/api/v1/product";
 
     @Autowired
     private MockMvc mockMvc;
@@ -32,7 +32,7 @@ class ProductsEndpointTests {
     private ProductRepository productRepository;
 
     @Test
-    void shouldReturnEmptyProductList() throws Exception {
+    void shouldReturnEmptyArrayWhenNoProductsInDb() throws Exception {
         this.mockMvc
                 .perform(get(ENDPOINT))
                 .andDo(print())
@@ -41,9 +41,9 @@ class ProductsEndpointTests {
     }
 
     @Test
-    void shouldReturnOneProduct() throws Exception {
+    void shouldReturnArrayWithOneProduct() throws Exception {
         var listOfOneProduct = List.of(getProduct());
-        var listOfOneProductDtoAsJson = "[" + getProductDtoAsString() + "]";
+        var listOfOneProductDtoAsJson = "[" + getProductResponseAsString() + "]";
 
         when(productRepository.findAll())
                 .thenReturn(listOfOneProduct);

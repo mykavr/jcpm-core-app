@@ -1,6 +1,6 @@
 package com.theroom307.management.unittests.controller.managementcontroller;
 
-import com.theroom307.management.controller.ManagementController;
+import com.theroom307.management.controller.ProductController;
 import com.theroom307.management.data.repository.ProductRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,10 +19,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(ManagementController.class)
+@WebMvcTest(ProductController.class)
 class ProductEndpointTests {
 
-    private final static String ENDPOINT = "/product/" + VALID_PRODUCT_ID;
+    private final static String ENDPOINT = "/api/v1/product/" + VALID_PRODUCT_ID;
 
     @Autowired
     private MockMvc mockMvc;
@@ -33,7 +33,7 @@ class ProductEndpointTests {
     @Test
     void shouldReturnProductDtoJson() throws Exception {
         var product = getProduct();
-        var productDtoAsJson = getProductDtoAsString();
+        var productDtoAsJson = getProductResponseAsString();
 
         when(productRepository.findById(anyLong()))
                 .thenReturn(Optional.of(product));
