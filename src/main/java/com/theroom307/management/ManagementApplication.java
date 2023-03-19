@@ -6,7 +6,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-@OpenAPIDefinition(info = @Info(title = "JPCM Core API", version = "1"))
+@OpenAPIDefinition(info = @Info(title = "JCPM Core API", version = "1"))
 public class ManagementApplication {
 
 	public static void main(String[] args) {

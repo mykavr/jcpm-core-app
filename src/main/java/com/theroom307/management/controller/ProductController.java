@@ -80,7 +80,8 @@ public class ProductController {
     @DeleteMapping("/{productId}")
     public void deleteProductById(
             @PathVariable
-            String productId) {
+            String productId
+    ) {
         var id = parseProductIdFromString(productId);
         productRepository.deleteById(id);
     }

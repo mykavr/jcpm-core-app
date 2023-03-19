@@ -1,4 +1,4 @@
-# JPCM Core Application
+# JCPM Core Application
 
 This is the core application for Jewelry Components and Products Management (JCPM).
 It is responsible for storing and managing items, and all the related business logic.
