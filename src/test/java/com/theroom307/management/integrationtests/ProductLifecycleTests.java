@@ -1,6 +1,6 @@
 package com.theroom307.management.integrationtests;
 
-import com.theroom307.management.data.dto.ProductDTO;
+import com.theroom307.management.data.dto.ProductResponseDto;
 import com.theroom307.management.data.repository.ProductRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -21,7 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 class ProductLifecycleTests {
 
-    private final static String PRODUCTS_ENDPOINT = "/product";
+    private final static String PRODUCTS_ENDPOINT = "/api/v1/product";
 
     private final static String PRODUCT_ENDPOINT = PRODUCTS_ENDPOINT + "/%1s"; // %1s: product ID
 
@@ -80,8 +80,7 @@ class ProductLifecycleTests {
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
 
-        var expectedProductDtoJson = getProductDtoAsString(
-                ProductDTO.fromEntity(product));
+        var expectedProductDtoJson = getAsString(ProductResponseDto.fromEntity(product));
 
         assertThat(response.getContentAsString())
                 .as("Response shouldn't be empty")
@@ -93,7 +92,7 @@ class ProductLifecycleTests {
     @Test
     void getProductsList() throws Exception {
         var product = productRepository.save(getProduct());
-        var expectedProductsListJson = "[" + getProductDtoAsString(ProductDTO.fromEntity(product)) + "]";
+        var expectedProductsListJson = "[" + getAsString(ProductResponseDto.fromEntity(product)) + "]";
 
         mockMvc.perform(get(PRODUCTS_ENDPOINT))
                 .andDo(print())

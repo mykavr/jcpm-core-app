@@ -1,35 +1,35 @@
 package com.theroom307.management.unittests.data;
 
-import com.theroom307.management.data.dto.ProductDTO;
+import com.theroom307.management.data.dto.ProductResponseDto;
 import org.junit.jupiter.api.Test;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
-import static com.theroom307.management.utils.TestProductData.getProduct;
-import static com.theroom307.management.utils.TestProductData.getProductDto;
+import static com.theroom307.management.utils.TestProductData.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ProductDtoConversionTests {
 
     @Test
     void convertProductDtoToProduct() {
-        var productDto = getProductDto();
-        var resultEntity = productDto.toEntity();
+        var productRequestDto = getProductRequest();
+        var resultEntity = productRequestDto.toEntity();
 
         assertThat(resultEntity)
-                .as("ProductDTO should be properly converted to a Product entity")
-                .isEqualTo(getProduct());
+                .as("ProductRequestDto should be properly converted to a Product entity")
+                .hasFieldOrPropertyWithValue("name", getProduct().getName())
+                .hasFieldOrPropertyWithValue("description", getProduct().getDescription());
     }
 
     @Test
     void convertProductToProductDto() {
         var productEntity = getProduct();
-        var resultProductDTO = ProductDTO.fromEntity(productEntity);
+        var resultProductDTO = ProductResponseDto.fromEntity(productEntity);
 
         assertThat(resultProductDTO)
                 .as("Product entity should be properly converted to a ProductDTO instance")
-                .isEqualTo(getProductDto());
+                .isEqualTo(getProductResponse());
     }
 
     @Test
@@ -42,7 +42,7 @@ class ProductDtoConversionTests {
         product.setCreated(dateTime);
         product.setModified(dateTime);
 
-        assertThat(ProductDTO.fromEntity(product))
+        assertThat(ProductResponseDto.fromEntity(product))
                 .as("Milli- and nanoseconds should be skipped")
                 .hasFieldOrPropertyWithValue("created", expectedTimestamp)
                 .hasFieldOrPropertyWithValue("modified", expectedTimestamp);

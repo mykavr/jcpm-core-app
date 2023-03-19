@@ -1,16 +1,16 @@
 package com.theroom307.management.utils;
 
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.theroom307.management.data.dto.ProductDTO;
+import com.theroom307.management.data.dto.ProductRequestDto;
+import com.theroom307.management.data.dto.ProductResponseDto;
 import com.theroom307.management.data.model.Product;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 
 import java.time.ZonedDateTime;
 
-import static com.theroom307.management.data.dto.ProductDTO.DATE_TIME_FORMATTER;
+import static com.theroom307.management.data.dto.ProductResponseDto.DATE_TIME_FORMATTER;
 
 @UtilityClass
 public class TestProductData {
@@ -27,8 +27,8 @@ public class TestProductData {
         return entity;
     }
 
-    public static ProductDTO getProductDto() {
-        return new ProductDTO(
+    public static ProductResponseDto getProductResponse() {
+        return new ProductResponseDto(
                 123L,
                 "product name",
                 "product description",
@@ -37,23 +37,25 @@ public class TestProductData {
         );
     }
 
-    public static String getProductDtoAsString() {
-        return getProductDtoAsString(getProductDto());
+    public static ProductRequestDto getProductRequest() {
+        return new ProductRequestDto(
+                "product name",
+                "product description"
+        );
+    }
+
+    public static String getProductResponseAsString() {
+        return getAsString(getProductResponse());
     }
 
     @SneakyThrows(JsonProcessingException.class)
-    public static String getProductDtoAsString(ProductDTO productDTO) {
-        return new ObjectMapper()
-                .setSerializationInclusion(Include.NON_NULL)
-                .writeValueAsString(productDTO);
+    public static String getAsString(Object o) {
+        return new ObjectMapper().writeValueAsString(o);
     }
 
     public static String getProductDtoToCreateProduct() {
-        var productDto = getProductDto()
-                .withId(null)
-                .withCreated(null)
-                .withModified(null);
-        return getProductDtoAsString(productDto);
+        var productDto = getProductRequest();
+        return getAsString(productDto);
     }
 
     public static Product getProductToCreate() {
