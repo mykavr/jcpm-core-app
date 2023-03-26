@@ -10,7 +10,7 @@ import java.time.format.DateTimeFormatter;
 
 @Schema(name = "Get Product Response Body")
 @With
-public record ProductResponseDto(
+public record ProductResponseDto (
         @Schema(example = "1")
         Long id,
 

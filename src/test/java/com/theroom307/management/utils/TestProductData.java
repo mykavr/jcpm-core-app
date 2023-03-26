@@ -48,6 +48,11 @@ public class TestProductData {
         return getAsString(getProductResponse());
     }
 
+    public static String getResponseForProduct(Product product) {
+        var response = ProductResponseDto.fromEntity(product);
+        return getAsString(response);
+    }
+
     @SneakyThrows(JsonProcessingException.class)
     public static String getAsString(Object o) {
         return new ObjectMapper().writeValueAsString(o);
@@ -64,5 +69,18 @@ public class TestProductData {
         entity.setCreated(null);
         entity.setModified(null);
         return entity;
+    }
+
+    public static String getProductListResponseAsString() {
+        return getProductListResponseAsString(getProductResponseAsString());
+    }
+
+    public static String getProductListResponseAsString(String productDtoAsString) {
+        return String.format("{\"data\":[%s],\"pagination\":{\"page\":0,\"size\":10,\"count\":1,\"total\":1}}",
+                productDtoAsString);
+    }
+
+    public static String getEmptyProductListAsString() {
+        return "{\"data\":[],\"pagination\":{\"page\":0,\"size\":10,\"count\":0,\"total\":0}}";
     }
 }

@@ -2,9 +2,11 @@ package com.theroom307.management.controller;
 
 import com.theroom307.management.controller.exception.BadRequestException;
 import com.theroom307.management.controller.exception.ProductNotFoundException;
+import com.theroom307.management.data.model.Product;
+import com.theroom307.management.data.repository.ProductRepository;
+import com.theroom307.management.data.dto.wrapper.ListResponseWrapper;
 import com.theroom307.management.data.dto.ProductRequestDto;
 import com.theroom307.management.data.dto.ProductResponseDto;
-import com.theroom307.management.data.repository.ProductRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -12,11 +14,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.stream.StreamSupport;
+import static com.theroom307.management.data.dto.wrapper.ListResponseWrapper.wrapperFor;
+import static com.theroom307.management.data.dto.wrapper.ListResponseWrapper.wrapperForEmptyList;
 
 @RestController
 @RequestMapping("/api/v1/product")
@@ -26,13 +30,37 @@ public class ProductController {
 
     private final ProductRepository productRepository;
 
-    @Operation(summary = "Get the list of all products")
+    private final InputValidationService validationService;
+
+    private static final String DEFAULT_PAGE_SIZE = "10";
+
+    @Operation(summary = "Get the list of all products (paginated)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200"),
+            @ApiResponse(responseCode = "400", description = "Invalid pagination parameters", content = @Content)
+    })
     @GetMapping
-    public List<ProductResponseDto> getProducts() {
-        var allProducts = productRepository.findAll();
-        return StreamSupport.stream(allProducts.spliterator(), false)
-                .map(ProductResponseDto::fromEntity)
-                .toList();
+    public ListResponseWrapper<ProductResponseDto> getProducts(
+            @RequestParam(defaultValue = "0")
+            @Schema(type = "integer", defaultValue = "0",
+                    description = "Pagination: zero-based page index, must not be negative")
+            int page,
+
+            @RequestParam(defaultValue = DEFAULT_PAGE_SIZE)
+            @Schema(type = "integer", defaultValue = DEFAULT_PAGE_SIZE,
+                    description = "Pagination: the size of the page to be returned, must be greater than 0")
+            int size
+    ) {
+        validationService.validatePaginationParams(page, size);
+
+        var pageable = PageRequest.of(page, size);
+        Page<Product> pageOfProducts = productRepository.findAll(pageable);
+
+        if (pageOfProducts == null) {
+            // JPA shouldn't return null, but it does when there are no products
+            return wrapperForEmptyList(pageable);
+        }
+        return wrapperFor(pageOfProducts);
     }
 
     @Operation(summary = "Get a product by its ID")

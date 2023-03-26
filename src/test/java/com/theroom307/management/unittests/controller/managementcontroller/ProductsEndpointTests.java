@@ -1,5 +1,6 @@
 package com.theroom307.management.unittests.controller.managementcontroller;
 
+import com.theroom307.management.controller.InputValidationService;
 import com.theroom307.management.controller.ProductController;
 import com.theroom307.management.data.model.Product;
 import com.theroom307.management.data.repository.ProductRepository;
@@ -7,6 +8,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -31,48 +35,52 @@ class ProductsEndpointTests {
     @MockBean
     private ProductRepository productRepository;
 
+    @MockBean
+    private InputValidationService inputValidationService;
+
     @Test
-    void shouldReturnEmptyArrayWhenNoProductsInDb() throws Exception {
+    void shouldReturnEmptyProductListWrapperWhenNoProductsInDb() throws Exception {
         this.mockMvc
                 .perform(get(ENDPOINT))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(content().string("[]"));
+                .andExpect(content().json(getEmptyProductListAsString()));
     }
 
     @Test
-    void shouldReturnArrayWithOneProduct() throws Exception {
-        var listOfOneProduct = List.of(getProduct());
-        var listOfOneProductDtoAsJson = "[" + getProductResponseAsString() + "]";
+    void shouldReturnProductListWrapperWithOneProduct() throws Exception {
+        Page<Product> pageWithOneProduct = new PageImpl<>(
+                List.of(getProduct()),
+                Pageable.ofSize(10),
+                1);
 
-        when(productRepository.findAll())
-                .thenReturn(listOfOneProduct);
+        when(productRepository.findAll(any(Pageable.class)))
+                .thenReturn(pageWithOneProduct);
 
         this.mockMvc
                 .perform(get(ENDPOINT))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(content().json(listOfOneProductDtoAsJson));
+                .andExpect(content().json(getProductListResponseAsString()));
     }
 
     @Test
     void shouldRequestFromProductRepository() throws Exception {
         this.mockMvc
                 .perform(get(ENDPOINT));
-        verify(productRepository).findAll();
+        verify(productRepository).findAll(any(Pageable.class));
     }
 
     @Test
     void shouldSaveToProductRepository() throws Exception {
-        var savedProduct = getProduct();
-
         when(productRepository.save(any(Product.class)))
-                .thenReturn(savedProduct);
+                .thenReturn(getProduct());
 
         this.mockMvc
                 .perform(post(ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(getProductDtoToCreateProduct()));
+
         verify(productRepository).save(getProductToCreate());
     }
 
@@ -91,5 +99,17 @@ class ProductsEndpointTests {
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(content().string(savedProductId));
+    }
+
+    @Test
+    void shouldValidateInputPaginationParameters() throws Exception {
+        var page = 3;
+        var size = 7;
+
+        mockMvc.perform(get(ENDPOINT)
+                .queryParam("page", String.valueOf(page))
+                .queryParam("size", String.valueOf(size)));
+
+        verify(inputValidationService).validatePaginationParams(page, size);
     }
 }
