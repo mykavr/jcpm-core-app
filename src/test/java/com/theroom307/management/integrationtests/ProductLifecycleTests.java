@@ -1,6 +1,5 @@
 package com.theroom307.management.integrationtests;
 
-import com.theroom307.management.data.dto.ProductResponseDto;
 import com.theroom307.management.data.repository.ProductRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -41,7 +40,7 @@ class ProductLifecycleTests {
         mockMvc.perform(get(PRODUCTS_ENDPOINT))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(content().string("[]"));
+                .andExpect(content().string(getEmptyProductListAsString()));
     }
 
     @Test
@@ -61,9 +60,8 @@ class ProductLifecycleTests {
 
         assertThat(createdProduct)
                 .as("The product should be saved to the DB")
-                .isPresent();
-
-        assertThat(createdProduct.get())
+                .isPresent()
+                .get()
                 .as("Product name should be properly saved")
                 .hasFieldOrPropertyWithValue("name", getProduct().getName())
                 .as("Product description should be properly saved")
@@ -72,7 +70,7 @@ class ProductLifecycleTests {
 
     @Test
     void getExistingProduct() throws Exception {
-        var product = productRepository.save(getProduct());
+        var product = productRepository.save(getProductToCreate());
 
         var response = mockMvc
                 .perform(get(String.format(PRODUCT_ENDPOINT, product.getId())))
@@ -80,7 +78,7 @@ class ProductLifecycleTests {
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
 
-        var expectedProductDtoJson = getAsString(ProductResponseDto.fromEntity(product));
+        var expectedProductDtoJson = getResponseForProduct(product);
 
         assertThat(response.getContentAsString())
                 .as("Response shouldn't be empty")
@@ -92,12 +90,14 @@ class ProductLifecycleTests {
     @Test
     void getProductsList() throws Exception {
         var product = productRepository.save(getProduct());
-        var expectedProductsListJson = "[" + getAsString(ProductResponseDto.fromEntity(product)) + "]";
+
+        var expectedSingleProductResponse = getResponseForProduct(product);
+        var expectedProductsList = getProductListResponseAsString(expectedSingleProductResponse);
 
         mockMvc.perform(get(PRODUCTS_ENDPOINT))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(content().json(expectedProductsListJson));
+                .andExpect(content().json(expectedProductsList));
     }
 
     @Test
