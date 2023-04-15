@@ -79,7 +79,7 @@ public class ProductController {
         if (product.isPresent()) {
             return ProductResponseDto.fromEntity(product.get());
         } else {
-            throw new ProductNotFoundException();
+            throw new ProductNotFoundException(productId);
         }
     }
 

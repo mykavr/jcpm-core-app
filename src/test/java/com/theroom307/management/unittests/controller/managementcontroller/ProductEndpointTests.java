@@ -60,7 +60,8 @@ class ProductEndpointTests {
                 .perform(get(ENDPOINT))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$").doesNotExist());
+                .andExpect(content().string(String.format(
+                        "Product '%s' was not found", VALID_PRODUCT_ID)));
 
         verify(productRepository).findById(VALID_PRODUCT_ID);
     }

@@ -21,7 +21,7 @@ class InputValidationServiceTests {
         var exception = assertThrows(BadRequestException.class, () ->
                 inputValidationService.validatePaginationParams(-1, 1));
 
-        assertThat(exception.getMessage())
+        assertThat(exception.getReason())
                 .as("Service should provide a proper error message")
                 .isEqualTo("Page must not be negative");
     }
@@ -31,7 +31,7 @@ class InputValidationServiceTests {
         var exception = assertThrows(BadRequestException.class, () ->
                 inputValidationService.validatePaginationParams(0, 0));
 
-        assertThat(exception.getMessage())
+        assertThat(exception.getReason())
                 .as("Service should provide a proper error message")
                 .isEqualTo("Page size must be greater than 0");
     }
