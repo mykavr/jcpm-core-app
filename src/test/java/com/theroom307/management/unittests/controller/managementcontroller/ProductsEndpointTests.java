@@ -1,6 +1,5 @@
 package com.theroom307.management.unittests.controller.managementcontroller;
 
-import com.theroom307.management.controller.InputValidationService;
 import com.theroom307.management.controller.ProductController;
 import com.theroom307.management.data.model.Product;
 import com.theroom307.management.data.repository.ProductRepository;
@@ -34,9 +33,6 @@ class ProductsEndpointTests {
 
     @MockBean
     private ProductRepository productRepository;
-
-    @MockBean
-    private InputValidationService inputValidationService;
 
     @Test
     void shouldReturnEmptyProductListWrapperWhenNoProductsInDb() throws Exception {
@@ -99,17 +95,5 @@ class ProductsEndpointTests {
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(content().string(savedProductId));
-    }
-
-    @Test
-    void shouldValidateInputPaginationParameters() throws Exception {
-        var page = 3;
-        var size = 7;
-
-        mockMvc.perform(get(ENDPOINT)
-                .queryParam("page", String.valueOf(page))
-                .queryParam("size", String.valueOf(size)));
-
-        verify(inputValidationService).validatePaginationParams(page, size);
     }
 }

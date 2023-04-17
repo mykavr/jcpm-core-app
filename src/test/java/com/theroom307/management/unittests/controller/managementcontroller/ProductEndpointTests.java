@@ -1,6 +1,5 @@
 package com.theroom307.management.unittests.controller.managementcontroller;
 
-import com.theroom307.management.controller.InputValidationService;
 import com.theroom307.management.controller.ProductController;
 import com.theroom307.management.data.repository.ProductRepository;
 import org.junit.jupiter.api.Test;
@@ -30,9 +29,6 @@ class ProductEndpointTests {
 
     @MockBean
     private ProductRepository productRepository;
-
-    @MockBean
-    private InputValidationService inputValidationService;
 
     @Test
     void shouldReturnProductDtoJson() throws Exception {

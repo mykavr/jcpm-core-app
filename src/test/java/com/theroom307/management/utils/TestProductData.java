@@ -16,6 +16,7 @@ import static com.theroom307.management.data.dto.ProductResponseDto.DATE_TIME_FO
 public class TestProductData {
 
     public static final Long VALID_PRODUCT_ID = Long.MAX_VALUE;
+//    public static final Long VALID_PRODUCT_ID = 1L;
 
     public static Product getProduct() {
         var entity = new Product();
