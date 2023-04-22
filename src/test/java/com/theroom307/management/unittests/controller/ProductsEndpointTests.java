@@ -1,4 +1,4 @@
-package com.theroom307.management.unittests.controller.managementcontroller;
+package com.theroom307.management.unittests.controller;
 
 import com.theroom307.management.controller.ProductController;
 import com.theroom307.management.data.model.Product;

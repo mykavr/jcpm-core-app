@@ -4,11 +4,9 @@ import com.theroom307.management.data.model.Product;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 
-import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
-
 @Schema(name = "Create Product Request Body")
 public record ProductRequestDto(
-        @Schema(example = "Product Name", requiredMode = REQUIRED)
+        @Schema(example = "Product Name")
         @NotBlank(message = "Product name is required")
         String name,
 

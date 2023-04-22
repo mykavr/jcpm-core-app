@@ -31,8 +31,7 @@ public class ControllerAdvisor extends ResponseEntityExceptionHandler {
                 exception.getConstraintViolations()
                         .stream()
                         .map(ConstraintViolation::getMessage)
-                        .collect(Collectors.joining(". "))
-        );
+                        .collect(Collectors.joining("\n")));
     }
 
     /**
@@ -47,7 +46,7 @@ public class ControllerAdvisor extends ResponseEntityExceptionHandler {
                 ex.getFieldErrors()
                         .stream()
                         .map(FieldError::getDefaultMessage)
-                        .collect(Collectors.joining(", ")));
+                        .collect(Collectors.joining("\n")));
     }
 
     /**
@@ -57,13 +56,11 @@ public class ControllerAdvisor extends ResponseEntityExceptionHandler {
      */
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     @SneakyThrows
-    public ResponseEntity<Object> handleMethodArgumentTypeMismatchException(
-            MethodArgumentTypeMismatchException exception
-    ) {
-        var message = String.format("'%s' must be a %s",
-                exception.getPropertyName(),
-                getRequiredTypeName(exception.getRequiredType()));
-        return createResponseEntity(HttpStatus.BAD_REQUEST, message);
+    public ResponseEntity<Object> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex) {
+        return createResponseEntity(HttpStatus.BAD_REQUEST,
+                String.format("'%s' must be a %s",
+                        ex.getPropertyName(),
+                        getRequiredTypeName(ex.getRequiredType())));
     }
 
     private String getRequiredTypeName(Class<?> type) {
