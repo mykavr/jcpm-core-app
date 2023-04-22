@@ -1,6 +1,5 @@
-package com.theroom307.management.unittests.controller.managementcontroller;
+package com.theroom307.management.unittests.controller;
 
-import com.theroom307.management.controller.InputValidationService;
 import com.theroom307.management.controller.ProductController;
 import com.theroom307.management.data.repository.ProductRepository;
 import org.junit.jupiter.api.Test;
@@ -31,9 +30,6 @@ class ProductEndpointTests {
     @MockBean
     private ProductRepository productRepository;
 
-    @MockBean
-    private InputValidationService inputValidationService;
-
     @Test
     void shouldReturnProductDtoJson() throws Exception {
         var product = getProduct();
@@ -60,7 +56,8 @@ class ProductEndpointTests {
                 .perform(get(ENDPOINT))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$").doesNotExist());
+                .andExpect(content().string(String.format(
+                        "Product '%s' was not found", VALID_PRODUCT_ID)));
 
         verify(productRepository).findById(VALID_PRODUCT_ID);
     }

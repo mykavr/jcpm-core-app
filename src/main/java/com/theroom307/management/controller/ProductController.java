@@ -1,22 +1,24 @@
 package com.theroom307.management.controller;
 
-import com.theroom307.management.controller.exception.BadRequestException;
 import com.theroom307.management.controller.exception.ProductNotFoundException;
-import com.theroom307.management.data.model.Product;
-import com.theroom307.management.data.repository.ProductRepository;
-import com.theroom307.management.data.dto.wrapper.ListResponseWrapper;
 import com.theroom307.management.data.dto.ProductRequestDto;
 import com.theroom307.management.data.dto.ProductResponseDto;
+import com.theroom307.management.data.dto.wrapper.ListResponseWrapper;
+import com.theroom307.management.data.model.Product;
+import com.theroom307.management.data.repository.ProductRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import static com.theroom307.management.data.dto.wrapper.ListResponseWrapper.wrapperFor;
@@ -24,13 +26,12 @@ import static com.theroom307.management.data.dto.wrapper.ListResponseWrapper.wra
 
 @RestController
 @RequestMapping("/api/v1/product")
+@Validated
 @RequiredArgsConstructor
 @Tag(name = "Product API")
 public class ProductController {
 
     private final ProductRepository productRepository;
-
-    private final InputValidationService validationService;
 
     private static final String DEFAULT_PAGE_SIZE = "10";
 
@@ -40,18 +41,20 @@ public class ProductController {
             @ApiResponse(responseCode = "400", description = "Invalid pagination parameters", content = @Content)
     })
     @GetMapping
-    public ListResponseWrapper<ProductResponseDto> getProducts(
+    public ListResponseWrapper<ProductResponseDto>
+    getProducts(
             @RequestParam(defaultValue = "0")
             @Schema(type = "integer", defaultValue = "0",
                     description = "Pagination: zero-based page index, must not be negative")
+            @Min(value = 0, message = "Page must not be negative")
             int page,
 
             @RequestParam(defaultValue = DEFAULT_PAGE_SIZE)
             @Schema(type = "integer", defaultValue = DEFAULT_PAGE_SIZE,
                     description = "Pagination: the size of the page to be returned, must be greater than 0")
+            @Min(value = 1, message = "Page size must be greater than 0")
             int size
     ) {
-        validationService.validatePaginationParams(page, size);
 
         var pageable = PageRequest.of(page, size);
         Page<Product> pageOfProducts = productRepository.findAll(pageable);
@@ -70,16 +73,17 @@ public class ProductController {
             @ApiResponse(responseCode = "400", description = "Invalid product ID", content = @Content)
     })
     @GetMapping("/{productId}")
-    public ProductResponseDto getProductById(
+    public ProductResponseDto
+    getProductById(
             @PathVariable
-            String productId
+            @Min(value = 1, message = "Product ID must be greater than zero")
+            long productId
     ) {
-        var id = parseProductIdFromString(productId);
-        var product = productRepository.findById(id);
+        var product = productRepository.findById(productId);
         if (product.isPresent()) {
             return ProductResponseDto.fromEntity(product.get());
         } else {
-            throw new ProductNotFoundException();
+            throw new ProductNotFoundException(productId);
         }
     }
 
@@ -89,8 +93,10 @@ public class ProductController {
             content = @Content(schema = @Schema(type = "integer", description = "Product ID", example = "1")))
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public long createNewProduct(
+    public long
+    createNewProduct(
             @RequestBody
+            @Valid
             ProductRequestDto product
     ) {
         var entity = product.toEntity();
@@ -106,19 +112,11 @@ public class ProductController {
             @ApiResponse(responseCode = "400", description = "Invalid product ID", content = @Content)
     })
     @DeleteMapping("/{productId}")
-    public void deleteProductById(
+    public void
+    deleteProductById(
             @PathVariable
-            String productId
+            long productId
     ) {
-        var id = parseProductIdFromString(productId);
-        productRepository.deleteById(id);
-    }
-
-    private long parseProductIdFromString(String productId) {
-        try {
-            return Long.parseLong(productId);
-        } catch (NumberFormatException e) {
-            throw new BadRequestException();
-        }
+        productRepository.deleteById(productId);
     }
 }
