@@ -1,5 +1,6 @@
 package com.theroom307.management.integrationtests;
 
+import com.theroom307.management.data.model.Product;
 import com.theroom307.management.data.repository.ProductRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -9,15 +10,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Optional;
 
+import static com.theroom307.management.utils.TestProductData.getProduct;
 import static org.hamcrest.Matchers.containsString;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -121,5 +125,23 @@ class ErrorHandlingTests {
                 .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string(expectedMessage));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "{}",
+            "{\"name\": \"  \", \"description\": \"Valid description.\"}",
+            "{\"description\": \"Valid description.\"}"
+    })
+    void createProduct_missingName_shouldReturnBadRequest(String createProductJson) throws Exception {
+        when(productRepository.save(any(Product.class))).thenReturn(getProduct());
+
+        this.mockMvc
+                .perform(post(ENDPOINT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(createProductJson))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Product name is required"));
     }
 }
