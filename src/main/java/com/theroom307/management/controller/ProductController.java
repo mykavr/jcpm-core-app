@@ -1,11 +1,9 @@
 package com.theroom307.management.controller;
 
-import com.theroom307.management.controller.exception.ProductNotFoundException;
 import com.theroom307.management.data.dto.ProductRequestDto;
 import com.theroom307.management.data.dto.ProductResponseDto;
 import com.theroom307.management.data.dto.wrapper.ListResponseWrapper;
-import com.theroom307.management.data.model.Product;
-import com.theroom307.management.data.repository.ProductRepository;
+import com.theroom307.management.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -15,14 +13,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import static com.theroom307.management.data.dto.wrapper.ListResponseWrapper.wrapperFor;
-import static com.theroom307.management.data.dto.wrapper.ListResponseWrapper.wrapperForEmptyList;
 
 @RestController
 @RequestMapping("/api/v1/product")
@@ -31,7 +26,7 @@ import static com.theroom307.management.data.dto.wrapper.ListResponseWrapper.wra
 @Tag(name = "Product API")
 public class ProductController {
 
-    private final ProductRepository productRepository;
+    private final ProductService productService;
 
     private static final String DEFAULT_PAGE_SIZE = "10";
 
@@ -55,14 +50,7 @@ public class ProductController {
             @Min(value = 1, message = "Page size must be greater than 0")
             int size
     ) {
-
-        var pageable = PageRequest.of(page, size);
-        Page<Product> pageOfProducts = productRepository.findAll(pageable);
-
-        if (pageOfProducts == null) {
-            // JPA shouldn't return null, but it does when there are no products
-            return wrapperForEmptyList(pageable);
-        }
+        var pageOfProducts = productService.getProducts(page, size);
         return wrapperFor(pageOfProducts);
     }
 
@@ -79,12 +67,7 @@ public class ProductController {
             @Min(value = 1, message = "Product ID must be greater than zero")
             long productId
     ) {
-        var product = productRepository.findById(productId);
-        if (product.isPresent()) {
-            return ProductResponseDto.fromEntity(product.get());
-        } else {
-            throw new ProductNotFoundException(productId);
-        }
+        return productService.getProduct(productId);
     }
 
     @Operation(summary = "Create a new product")
@@ -99,9 +82,7 @@ public class ProductController {
             @Valid
             ProductRequestDto product
     ) {
-        var entity = product.toEntity();
-        var savedEntity = productRepository.save(entity);
-        return savedEntity.getId();
+        return productService.createProduct(product);
     }
 
     @Operation(summary = "Delete a product by its ID")
@@ -117,6 +98,6 @@ public class ProductController {
             @PathVariable
             long productId
     ) {
-        productRepository.deleteById(productId);
+        productService.deleteProduct(productId);
     }
 }

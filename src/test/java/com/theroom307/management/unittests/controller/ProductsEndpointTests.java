@@ -1,8 +1,9 @@
 package com.theroom307.management.unittests.controller;
 
 import com.theroom307.management.controller.ProductController;
-import com.theroom307.management.data.model.Product;
-import com.theroom307.management.data.repository.ProductRepository;
+import com.theroom307.management.data.dto.ProductRequestDto;
+import com.theroom307.management.data.dto.ProductResponseDto;
+import com.theroom307.management.service.ProductService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -13,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.Collections;
 import java.util.List;
 
 import static com.theroom307.management.utils.TestProductData.*;
@@ -32,10 +34,17 @@ class ProductsEndpointTests {
     private MockMvc mockMvc;
 
     @MockBean
-    private ProductRepository productRepository;
+    private ProductService productService;
 
     @Test
-    void shouldReturnEmptyProductListWrapperWhenNoProductsInDb() throws Exception {
+    void getProducts_whenNoProductsExist_shouldReturnEmptyProductListWrapper() throws Exception {
+        Page<ProductResponseDto> pageWithZeroProducts = new PageImpl<>(
+                Collections.emptyList(),
+                Pageable.ofSize(10),
+                0);
+
+        when(productService.getProducts(anyInt(), anyInt())).thenReturn(pageWithZeroProducts);
+
         this.mockMvc
                 .perform(get(ENDPOINT))
                 .andDo(print())
@@ -44,13 +53,13 @@ class ProductsEndpointTests {
     }
 
     @Test
-    void shouldReturnProductListWrapperWithOneProduct() throws Exception {
-        Page<Product> pageWithOneProduct = new PageImpl<>(
-                List.of(getProduct()),
+    void getProducts_whenOneProductExists_shouldReturnProductListWrapperWithOneProduct() throws Exception {
+        Page<ProductResponseDto> pageWithOneProduct = new PageImpl<>(
+                List.of(getProductResponse()),
                 Pageable.ofSize(10),
                 1);
 
-        when(productRepository.findAll(any(Pageable.class)))
+        when(productService.getProducts(anyInt(), anyInt()))
                 .thenReturn(pageWithOneProduct);
 
         this.mockMvc
@@ -61,32 +70,32 @@ class ProductsEndpointTests {
     }
 
     @Test
-    void shouldRequestFromProductRepository() throws Exception {
+    void getProducts_shouldRequestFromProductService() throws Exception {
         this.mockMvc
                 .perform(get(ENDPOINT));
-        verify(productRepository).findAll(any(Pageable.class));
+        verify(productService).getProducts(anyInt(), anyInt());
     }
 
     @Test
-    void shouldSaveToProductRepository() throws Exception {
-        when(productRepository.save(any(Product.class)))
-                .thenReturn(getProduct());
+    void postProduct_shouldSaveProduct() throws Exception {
+        when(productService.createProduct((any(ProductRequestDto.class))))
+                .thenReturn(1L);
 
         this.mockMvc
                 .perform(post(ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(getProductDtoToCreateProduct()));
 
-        verify(productRepository).save(getProductToCreate());
+        verify(productService).createProduct(getProductRequest());
     }
 
     @Test
-    void shouldReturnIdOnCreateProduct() throws Exception {
-        var savedProduct = getProduct();
-        var savedProductId = String.valueOf(savedProduct.getId());
+    void postProduct_shouldReturnProductId() throws Exception {
+        var savedProductId = 1L;
+        var savedProductIdAsString = String.valueOf(savedProductId);
 
-        when(productRepository.save(any(Product.class)))
-                .thenReturn(savedProduct);
+        when(productService.createProduct(any(ProductRequestDto.class)))
+                .thenReturn(savedProductId);
 
         this.mockMvc
                 .perform(post(ENDPOINT)
@@ -94,6 +103,6 @@ class ProductsEndpointTests {
                         .content(getProductDtoToCreateProduct()))
                 .andDo(print())
                 .andExpect(status().isCreated())
-                .andExpect(content().string(savedProductId));
+                .andExpect(content().string(savedProductIdAsString));
     }
 }

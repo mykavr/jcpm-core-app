@@ -1,8 +1,8 @@
 package com.theroom307.management.unittests.controller;
 
 import com.theroom307.management.controller.ProductController;
-import com.theroom307.management.data.model.Product;
-import com.theroom307.management.data.repository.ProductRepository;
+import com.theroom307.management.controller.exception.ProductNotFoundException;
+import com.theroom307.management.service.ProductService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -13,11 +13,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Optional;
-
-import static com.theroom307.management.utils.TestProductData.getProduct;
 import static org.hamcrest.Matchers.containsString;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -36,11 +32,11 @@ class ErrorHandlingTests {
     private MockMvc mockMvc;
 
     @MockBean
-    private ProductRepository productRepository;
+    private ProductService productService;
 
     @Test
     void shouldReturnGeneralError() throws Exception {
-        when(productRepository.findById(anyLong()))
+        when(productService.getProduct(anyLong()))
                 .thenThrow(new RuntimeException());
 
         this.mockMvc
@@ -101,8 +97,8 @@ class ErrorHandlingTests {
 
     @Test
     void shouldRespond404WhenProductDoesNotExist() throws Exception {
-        when(productRepository.findById(anyLong()))
-                .thenReturn(Optional.empty());
+        when(productService.getProduct(anyLong()))
+                .thenThrow(new ProductNotFoundException(1));
 
         this.mockMvc
                 .perform(get(ENDPOINT + "/1"))
@@ -111,7 +107,7 @@ class ErrorHandlingTests {
                 .andExpect(content().string(String.format(
                         "Product '%s' was not found", 1)));
 
-        verify(productRepository).findById(1L);
+        verify(productService).getProduct(1L);
     }
 
     @ParameterizedTest
@@ -134,8 +130,6 @@ class ErrorHandlingTests {
             "{\"description\": \"Valid description.\"}"
     })
     void createProduct_missingName_shouldReturnBadRequest(String createProductJson) throws Exception {
-        when(productRepository.save(any(Product.class))).thenReturn(getProduct());
-
         this.mockMvc
                 .perform(post(ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)

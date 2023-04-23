@@ -1,14 +1,13 @@
 package com.theroom307.management.unittests.controller;
 
 import com.theroom307.management.controller.ProductController;
-import com.theroom307.management.data.repository.ProductRepository;
+import com.theroom307.management.controller.exception.ProductNotFoundException;
+import com.theroom307.management.service.ProductService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.Optional;
 
 import static com.theroom307.management.utils.TestProductData.*;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -28,15 +27,14 @@ class ProductEndpointTests {
     private MockMvc mockMvc;
 
     @MockBean
-    private ProductRepository productRepository;
+    private ProductService productService;
 
     @Test
-    void shouldReturnProductDtoJson() throws Exception {
-        var product = getProduct();
-        var productDtoAsJson = getProductResponseAsString();
+    void getProduct_shouldReturnProductDto() throws Exception {
+        when(productService.getProduct(anyLong()))
+                .thenReturn(getProductResponse());
 
-        when(productRepository.findById(anyLong()))
-                .thenReturn(Optional.of(product));
+        var productDtoAsJson = getProductResponseAsString();
 
         this.mockMvc
                 .perform(get(ENDPOINT))
@@ -44,13 +42,13 @@ class ProductEndpointTests {
                 .andExpect(status().isOk())
                 .andExpect(content().json(productDtoAsJson));
 
-        verify(productRepository).findById(VALID_PRODUCT_ID);
+        verify(productService).getProduct(VALID_PRODUCT_ID);
     }
 
     @Test
-    void shouldRespond404WhenProductDoesNotExist() throws Exception {
-        when(productRepository.findById(anyLong()))
-                .thenReturn(Optional.empty());
+    void getProduct_whenProductDoesNotExist_shouldRespond404() throws Exception {
+        when(productService.getProduct(anyLong()))
+                .thenThrow(new ProductNotFoundException(VALID_PRODUCT_ID));
 
         this.mockMvc
                 .perform(get(ENDPOINT))
@@ -59,18 +57,18 @@ class ProductEndpointTests {
                 .andExpect(content().string(String.format(
                         "Product '%s' was not found", VALID_PRODUCT_ID)));
 
-        verify(productRepository).findById(VALID_PRODUCT_ID);
+        verify(productService).getProduct(VALID_PRODUCT_ID);
     }
 
     @Test
-    void shouldDeleteProduct() throws Exception {
+    void deleteProduct_shouldDeleteProduct() throws Exception {
         this.mockMvc
                 .perform(delete(ENDPOINT))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").doesNotExist());
 
-        verify(productRepository).deleteById(VALID_PRODUCT_ID);
+        verify(productService).deleteProduct(VALID_PRODUCT_ID);
     }
 
 }
