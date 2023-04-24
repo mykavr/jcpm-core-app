@@ -41,8 +41,6 @@ class ProductEndpointTests {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().json(productDtoAsJson));
-
-        verify(productService).getProduct(VALID_PRODUCT_ID);
     }
 
     @Test
@@ -56,17 +54,34 @@ class ProductEndpointTests {
                 .andExpect(status().isNotFound())
                 .andExpect(content().string(String.format(
                         "Product '%s' was not found", VALID_PRODUCT_ID)));
+    }
+
+    @Test
+    void getProduct_shouldRequestFromService() throws Exception {
+        when(productService.getProduct(anyLong()))
+                .thenReturn(getProductResponse());
+
+        this.mockMvc
+                .perform(get(ENDPOINT))
+                .andDo(print());
 
         verify(productService).getProduct(VALID_PRODUCT_ID);
     }
 
     @Test
-    void deleteProduct_shouldDeleteProduct() throws Exception {
+    void deleteProduct_shouldReturn200() throws Exception {
         this.mockMvc
                 .perform(delete(ENDPOINT))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").doesNotExist());
+    }
+
+    @Test
+    void deleteProduct_shouldDeleteUsingProductService() throws Exception {
+        this.mockMvc
+                .perform(delete(ENDPOINT))
+                .andDo(print());
 
         verify(productService).deleteProduct(VALID_PRODUCT_ID);
     }

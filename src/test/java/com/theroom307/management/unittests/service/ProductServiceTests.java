@@ -120,7 +120,7 @@ class ProductServiceTests {
 
     @Test
     void deleteProduct_shouldDeleteProductFromRepository() {
-        var productId = VALID_PRODUCT_ID + 1;
+        var productId = VALID_PRODUCT_ID;
         productService.deleteProduct(productId);
         verify(productRepository).deleteById(productId);
     }
