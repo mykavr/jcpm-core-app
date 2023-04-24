@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 @AllArgsConstructor
 @Getter
@@ -29,15 +28,6 @@ public class Pagination {
                 pageable.getPageSize(),
                 page.getNumberOfElements(),
                 page.getTotalElements()
-        );
-    }
-
-    static Pagination from(Pageable pageable) {
-        return new Pagination(
-                pageable.getPageNumber(),
-                pageable.getPageSize(),
-                0,
-                0
         );
     }
 }
