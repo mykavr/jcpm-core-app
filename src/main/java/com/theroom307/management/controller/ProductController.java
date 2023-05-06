@@ -17,8 +17,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import static com.theroom307.management.data.dto.wrapper.ListResponseWrapper.wrapperFor;
-
 @RestController
 @RequestMapping("/api/v1/product")
 @Validated
@@ -50,8 +48,7 @@ public class ProductController {
             @Min(value = 1, message = "Page size must be greater than 0")
             int size
     ) {
-        var pageOfProducts = productService.getProducts(page, size);
-        return wrapperFor(pageOfProducts);
+        return productService.getProducts(page, size);
     }
 
     @Operation(summary = "Get a product by its ID")
@@ -83,6 +80,25 @@ public class ProductController {
             ProductRequestDto product
     ) {
         return productService.createProduct(product);
+    }
+
+    @Operation(summary = "Edit a product")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Product data sucessfully updated", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Product not found or invalid ID", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Invalid product ID or data", content = @Content)
+    })
+    @PatchMapping("/{productId}")
+    public void
+    editProduct(
+            @PathVariable
+            @Min(value = 1, message = "Product ID must be greater than zero")
+            long productId,
+
+            @RequestBody
+            ProductRequestDto product
+    ) {
+        productService.editProduct(productId, product);
     }
 
     @Operation(summary = "Delete a product by its ID")
