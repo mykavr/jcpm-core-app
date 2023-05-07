@@ -126,44 +126,34 @@ class ProductServiceTests {
     void editProduct_changeName_shouldUpdateEditedProduct() {
         var productDto = new ProductRequestDto("New Product Name", null);
 
-        var editedProduct = getProduct();
-        editedProduct.setName("New Product Name");
-
         when(productRepository.findById(anyLong())).thenReturn(Optional.of(getProduct()));
 
         productService.editProduct(VALID_PRODUCT_ID, productDto);
 
-        verify(productRepository).updateNameBy(editedProduct.getName(), VALID_PRODUCT_ID);
+        verify(productRepository).updateNameById("New Product Name", VALID_PRODUCT_ID);
     }
 
     @Test
     void editProduct_changeDescription_shouldUpdateEditedProduct() {
         var productDto = new ProductRequestDto(null, "New product description.");
 
-        var editedProduct = getProduct();
-        editedProduct.setDescription("New product description.");
-
         when(productRepository.findById(anyLong())).thenReturn(Optional.of(getProduct()));
 
         productService.editProduct(VALID_PRODUCT_ID, productDto);
 
-        verify(productRepository).updateDescriptionById(editedProduct.getDescription(), VALID_PRODUCT_ID);
+        verify(productRepository).updateDescriptionById("New product description.", VALID_PRODUCT_ID);
     }
 
     @Test
     void editProduct_changeNameAndDescription_shouldUpdateEditedProduct() {
         var productDto = new ProductRequestDto("New Product Name", "New product description.");
 
-        var editedProductEntity = getProduct();
-        editedProductEntity.setName("New Product Name");
-        editedProductEntity.setDescription("New product description.");
-
         when(productRepository.findById(anyLong())).thenReturn(Optional.of(getProduct()));
 
         productService.editProduct(VALID_PRODUCT_ID, productDto);
 
-        verify(productRepository).updateNameBy(editedProductEntity.getName(), VALID_PRODUCT_ID);
-        verify(productRepository).updateDescriptionById(editedProductEntity.getDescription(), VALID_PRODUCT_ID);
+        verify(productRepository).updateNameById("New Product Name", VALID_PRODUCT_ID);
+        verify(productRepository).updateDescriptionById("New product description.", VALID_PRODUCT_ID);
     }
 
     @Test

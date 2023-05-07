@@ -77,7 +77,7 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new ProductNotFoundException(productId));
 
         if (newName != null && !product.getName().equals(newName)) {
-            productRepository.updateNameBy(newName, productId);
+            productRepository.updateNameById(newName, productId);
         }
 
         if (newDescription != null && !product.getDescription().equals(newDescription)) {
