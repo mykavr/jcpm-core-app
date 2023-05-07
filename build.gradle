@@ -4,8 +4,8 @@ plugins {
 	id 'io.spring.dependency-management' version '1.1.0'
 }
 
-group = 'com.theroom307'
-version = '0.0.1-SNAPSHOT'
+group = 'com.theroom307.jcpm'
+version = '0.1.0'
 sourceCompatibility = '17'
 
 configurations {
