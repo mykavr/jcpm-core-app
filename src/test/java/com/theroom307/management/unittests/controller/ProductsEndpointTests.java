@@ -3,14 +3,13 @@ package com.theroom307.management.unittests.controller;
 import com.theroom307.management.controller.ProductController;
 import com.theroom307.management.data.dto.ProductRequestDto;
 import com.theroom307.management.data.dto.ProductResponseDto;
+import com.theroom307.management.data.dto.wrapper.ListResponseWrapper;
+import com.theroom307.management.data.dto.wrapper.Pagination;
 import com.theroom307.management.service.ProductService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -38,12 +37,12 @@ class ProductsEndpointTests {
 
     @Test
     void getProducts_whenNoProductsExist_shouldReturnEmptyProductListWrapper() throws Exception {
-        Page<ProductResponseDto> pageWithZeroProducts = new PageImpl<>(
-                Collections.emptyList(),
-                Pageable.ofSize(10),
-                0);
+        var zeroProducts = ListResponseWrapper.<ProductResponseDto>builder()
+                .data(Collections.emptyList())
+                .pagination(new Pagination(0, 10, 0, 0))
+                .build();
 
-        when(productService.getProducts(anyInt(), anyInt())).thenReturn(pageWithZeroProducts);
+        when(productService.getProducts(anyInt(), anyInt())).thenReturn(zeroProducts);
 
         this.mockMvc
                 .perform(get(ENDPOINT))
@@ -54,13 +53,12 @@ class ProductsEndpointTests {
 
     @Test
     void getProducts_whenOneProductExists_shouldReturnProductListWrapperWithOneProduct() throws Exception {
-        Page<ProductResponseDto> pageWithOneProduct = new PageImpl<>(
-                List.of(getProductResponse()),
-                Pageable.ofSize(10),
-                1);
+        var products = ListResponseWrapper.<ProductResponseDto>builder()
+                .data(List.of(getProductResponse()))
+                .pagination(new Pagination(0, 10, 1, 1))
+                .build();
 
-        when(productService.getProducts(anyInt(), anyInt()))
-                .thenReturn(pageWithOneProduct);
+        when(productService.getProducts(anyInt(), anyInt())).thenReturn(products);
 
         this.mockMvc
                 .perform(get(ENDPOINT))

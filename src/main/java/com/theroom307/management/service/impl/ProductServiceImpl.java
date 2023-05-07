@@ -1,21 +1,21 @@
 package com.theroom307.management.service.impl;
 
+import com.theroom307.management.controller.exception.BadRequestException;
 import com.theroom307.management.controller.exception.ProductNotFoundException;
 import com.theroom307.management.data.dto.ProductRequestDto;
 import com.theroom307.management.data.dto.ProductResponseDto;
+import com.theroom307.management.data.dto.wrapper.ListResponseWrapper;
+import com.theroom307.management.data.dto.wrapper.Pagination;
 import com.theroom307.management.data.model.Product;
 import com.theroom307.management.data.repository.ProductRepository;
 import com.theroom307.management.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
-
 
 @Service
 @RequiredArgsConstructor
@@ -24,29 +24,26 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
 
     @Override
-    public Page<ProductResponseDto> getProducts(int page, int size) {
+    public ListResponseWrapper<ProductResponseDto> getProducts(int page, int size) {
         var pageable = PageRequest.of(page, size);
         var pageOfProducts = productRepository.findAll(pageable);
-        return getPageOfProductDto(pageOfProducts, pageable);
-    }
 
-    private Page<ProductResponseDto> getPageOfProductDto(
-            Page<Product> pageOfProducts,
+        //noinspection ConstantConditions
+        if (pageOfProducts == null) {
+            // JPA (unexpectedly) returns null when there are no products
+            return ListResponseWrapper.<ProductResponseDto>builder()
+                    .data(Collections.emptyList())
+                    .pagination(Pagination.forEmptyPage(pageable))
+                    .build();
+        }
 
-            // When there are no products, JPA (unexpectedly) returns null
-            // which is why we cannot retrieve it from pageOfProducts:
-            // pageOfProducts.getPageable() would lead to an NPE
-            Pageable pageable
-    ) {
-        var listOfProducts = getProductDtoList(pageOfProducts);
-        var total = pageOfProducts == null ? 0 : pageOfProducts.getTotalElements();
-        return new PageImpl<>(listOfProducts, pageable, total);
+        return ListResponseWrapper.<ProductResponseDto>builder()
+                .data(getProductDtoList(pageOfProducts))
+                .pagination(Pagination.from(pageOfProducts))
+                .build();
     }
 
     private List<ProductResponseDto> getProductDtoList(Page<Product> pageOfProducts) {
-        if (pageOfProducts == null) {
-            return Collections.emptyList();
-        }
         return pageOfProducts.stream()
                 .map(ProductResponseDto::fromEntity)
                 .toList();
@@ -67,6 +64,35 @@ public class ProductServiceImpl implements ProductService {
         var entity = productDto.toEntity();
         var savedEntity = productRepository.save(entity);
         return savedEntity.getId();
+    }
+
+    @Override
+    public void editProduct(long productId, ProductRequestDto productDto) {
+        var newName = productDto.name();
+        var newDescription = productDto.description();
+
+        checkThatProductCanBeUpdated(newName, newDescription);
+
+        var product = productRepository.findById(productId)
+                .orElseThrow(() -> new ProductNotFoundException(productId));
+
+        if (newName != null && !product.getName().equals(newName)) {
+            productRepository.updateNameById(newName, productId);
+        }
+
+        if (newDescription != null && !product.getDescription().equals(newDescription)) {
+            productRepository.updateDescriptionById(newDescription, productId);
+        }
+    }
+
+    private void checkThatProductCanBeUpdated(String newName, String newDescription) {
+        if (newName == null && newDescription == null) {
+            throw new BadRequestException("New value for the product name or description must be provided");
+        }
+
+        if (newName != null && newName.isBlank()) {
+            throw new BadRequestException("Product name cannot be blank");
+        }
     }
 
     @Override

@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -20,6 +21,11 @@ import java.util.stream.Collectors;
 
 @ControllerAdvice
 public class ControllerAdvisor extends ResponseEntityExceptionHandler {
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<Object> handleBadRequestException(BadRequestException ex) {
+        return createResponseEntity(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
 
     /**
      * Handle the ConstraintViolationException which is thrown
@@ -90,7 +96,14 @@ public class ControllerAdvisor extends ResponseEntityExceptionHandler {
         return createResponseEntity(HttpStatus.BAD_REQUEST, "What was that?");
     }
 
-    private ResponseEntity<Object> createResponseEntity(HttpStatus status, String message) {
+    @Override
+    protected ResponseEntity<Object> handleHttpRequestMethodNotSupported(
+            HttpRequestMethodNotSupportedException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        return createResponseEntity(HttpStatus.BAD_REQUEST, "%s method is not supported", ex.getMethod());
+    }
+
+    private ResponseEntity<Object> createResponseEntity(HttpStatus status, String message, String... args) {
+        message = String.format(message, (Object[]) args);
         return new ResponseEntity<>(message, status);
     }
 
