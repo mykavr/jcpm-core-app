@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 @Validated
 @RequiredArgsConstructor
 @Tag(name = "Product API")
+@Slf4j
 public class ProductController {
 
     private final ProductService productService;
@@ -48,7 +50,10 @@ public class ProductController {
             @Min(value = 1, message = "Page size must be greater than 0")
             int size
     ) {
-        return productService.getProducts(page, size);
+        log.info("Received a Get Products request with pagination parameters: page={}, size={}", page, size);
+        var products = productService.getProducts(page, size);
+        log.info("Responding with {} products", products == null ? "null" : products.data().size());
+        return products;
     }
 
     @Operation(summary = "Get a product by its ID")
@@ -64,7 +69,10 @@ public class ProductController {
             @Min(value = 1, message = "Product ID must be greater than zero")
             long productId
     ) {
-        return productService.getProduct(productId);
+        log.info("Received a Get Product request for productId={}", productId);
+        var product = productService.getProduct(productId);
+        log.info("Responding with {}", product);
+        return product;
     }
 
     @Operation(summary = "Create a new product")
@@ -79,6 +87,7 @@ public class ProductController {
             @Valid
             ProductRequestDto product
     ) {
+        log.info("Received a Create Product request: {}", product);
         return productService.createProduct(product);
     }
 
@@ -98,6 +107,7 @@ public class ProductController {
             @RequestBody
             ProductRequestDto product
     ) {
+        log.info("Received an Edit Product request for productId={} with input: {}", productId, product);
         productService.editProduct(productId, product);
     }
 
@@ -114,6 +124,7 @@ public class ProductController {
             @PathVariable
             long productId
     ) {
+        log.info("Received a Delete Product request for productId={}", productId);
         productService.deleteProduct(productId);
     }
 }
