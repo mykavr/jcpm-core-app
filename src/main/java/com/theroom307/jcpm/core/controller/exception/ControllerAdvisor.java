@@ -3,6 +3,7 @@ package com.theroom307.jcpm.core.controller.exception;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -20,6 +21,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import java.util.stream.Collectors;
 
 @ControllerAdvice
+@Slf4j
 public class ControllerAdvisor extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(BadRequestException.class)
@@ -104,6 +106,7 @@ public class ControllerAdvisor extends ResponseEntityExceptionHandler {
 
     private ResponseEntity<Object> createResponseEntity(HttpStatus status, String message, String... args) {
         message = String.format(message, (Object[]) args);
+        log.warn("Returning {} with the following error message: {}", status.value(), message);
         return new ResponseEntity<>(message, status);
     }
 
