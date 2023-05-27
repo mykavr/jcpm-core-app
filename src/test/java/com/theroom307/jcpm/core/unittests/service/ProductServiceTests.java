@@ -97,7 +97,7 @@ class ProductServiceTests {
     }
 
     @Test
-    void getProduct_whenProductDoesNotExists_shouldThrowProductNotFoundException() {
+    void getProduct_whenProductDoesNotExist_shouldThrowProductNotFoundException() {
         var productId = VALID_PRODUCT_ID;
 
         when(productRepository.findById(productId)).thenReturn(Optional.empty());

@@ -1,11 +1,8 @@
 package com.theroom307.jcpm.core.utils;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.theroom307.jcpm.core.data.dto.ProductRequestDto;
 import com.theroom307.jcpm.core.data.dto.ProductResponseDto;
 import com.theroom307.jcpm.core.data.model.Product;
-import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 
 import java.time.ZonedDateTime;
@@ -45,22 +42,17 @@ public class TestProductData {
     }
 
     public static String getProductResponseAsString() {
-        return getAsString(getProductResponse());
+        return ConversionHelper.getAsString(getProductResponse());
     }
 
     public static String getResponseForProduct(Product product) {
         var response = ProductResponseDto.fromEntity(product);
-        return getAsString(response);
-    }
-
-    @SneakyThrows(JsonProcessingException.class)
-    public static String getAsString(Object o) {
-        return new ObjectMapper().writeValueAsString(o);
+        return ConversionHelper.getAsString(response);
     }
 
     public static String getProductDtoToCreateProduct() {
         var productDto = getProductRequest();
-        return getAsString(productDto);
+        return ConversionHelper.getAsString(productDto);
     }
 
     public static Product getProductToCreate() {
