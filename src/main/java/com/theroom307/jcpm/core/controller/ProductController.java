@@ -7,7 +7,6 @@ import com.theroom307.jcpm.core.data.dto.wrapper.ListResponseWrapper;
 import com.theroom307.jcpm.core.data.model.Product;
 import com.theroom307.jcpm.core.service.ItemService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -15,8 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -24,20 +22,18 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/product")
 @Validated
-@RequiredArgsConstructor
 @Tag(name = "Product API")
-@Slf4j
-public class ProductController {
+public class ProductController extends BaseItemController<Product> {
 
-    private final ItemService<Product> productService;
-
-    private static final String DEFAULT_PAGE_SIZE = "10";
+    protected ProductController(@Autowired ItemService<Product> service) {
+        super(service);
+    }
 
     @Operation(summary = "Get the list of all products (paginated)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", content = @Content(
                     mediaType = "application/json",
-                    array = @ArraySchema(schema = @Schema(implementation = ProductResponseDto.class)))),
+                    schema = @Schema(implementation = WrappedListOfProducts.class))),
             @ApiResponse(responseCode = "400", description = "Invalid pagination parameters", content = @Content)
     })
     @GetMapping
@@ -55,16 +51,13 @@ public class ProductController {
             @Min(value = 1, message = "Page size must be greater than 0")
             int size
     ) {
-        log.info("Received a Get Products request with pagination parameters: page={}, size={}", page, size);
-        var products = productService.getItems(page, size);
-        log.info("Responding with {} products", products == null ? "null" : products.data().size());
-        return products;
+        return service.getItems(page, size);
     }
 
     @Operation(summary = "Get a product by its ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", content = @Content(
-                    mediaType = "application/json", schema =  @Schema(implementation = ProductResponseDto.class))),
+                    mediaType = "application/json", schema = @Schema(implementation = ProductResponseDto.class))),
             @ApiResponse(responseCode = "404", description = "Product not found or invalid ID", content = @Content),
             @ApiResponse(responseCode = "400", description = "Invalid product ID", content = @Content)
     })
@@ -75,10 +68,7 @@ public class ProductController {
             @Min(value = 1, message = "Product ID must be greater than zero")
             long productId
     ) {
-        log.info("Received a Get Product request for productId={}", productId);
-        var product = productService.getItem(productId);
-        log.info("Responding with {}", product);
-        return product;
+        return service.getItem(productId);
     }
 
     @Operation(summary = "Create a new product")
@@ -93,8 +83,7 @@ public class ProductController {
             @Valid
             ProductRequestDto product
     ) {
-        log.info("Received a Create Product request: {}", product);
-        return productService.createItem(product);
+        return service.createItem(product);
     }
 
     @Operation(summary = "Edit a product")
@@ -113,8 +102,7 @@ public class ProductController {
             @RequestBody
             ProductRequestDto product
     ) {
-        log.info("Received an Edit Product request for productId={} with input: {}", productId, product);
-        productService.editItem(productId, product);
+        service.editItem(productId, product);
     }
 
     @Operation(summary = "Delete a product by its ID")
@@ -130,7 +118,10 @@ public class ProductController {
             @PathVariable
             long productId
     ) {
-        log.info("Received a Delete Product request for productId={}", productId);
-        productService.deleteItem(productId);
+        service.deleteItem(productId);
+    }
+
+    // for Open API Documentation
+    private static class WrappedListOfProducts extends ListResponseWrapper<ProductResponseDto> {
     }
 }

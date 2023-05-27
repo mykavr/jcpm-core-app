@@ -7,7 +7,6 @@ import com.theroom307.jcpm.core.data.dto.wrapper.ListResponseWrapper;
 import com.theroom307.jcpm.core.data.model.Component;
 import com.theroom307.jcpm.core.service.ItemService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -15,8 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -24,20 +22,18 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/component")
 @Validated
-@RequiredArgsConstructor
 @Tag(name = "Component API")
-@Slf4j
-public class ComponentController {
+public class ComponentController extends BaseItemController<Component> {
 
-    private final ItemService<Component> componentService;
-
-    private static final String DEFAULT_PAGE_SIZE = "10";
+    protected ComponentController(@Autowired ItemService<Component> service) {
+        super(service);
+    }
 
     @Operation(summary = "Get the list of all components (paginated)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", content = @Content(
                     mediaType = "application/json",
-                    array = @ArraySchema(schema = @Schema(implementation = ComponentResponseDto.class)))),
+                    schema = @Schema(implementation = WrappedListOfComponents.class))),
             @ApiResponse(responseCode = "400", description = "Invalid pagination parameters", content = @Content)
     })
     @GetMapping
@@ -55,16 +51,13 @@ public class ComponentController {
             @Min(value = 1, message = "Page size must be greater than 0")
             int size
     ) {
-        log.info("Received a Get Components request with pagination parameters: page={}, size={}", page, size);
-        var components = componentService.getItems(page, size);
-        log.info("Responding with {} components", components == null ? "null" : components.data().size());
-        return components;
+        return service.getItems(page, size);
     }
 
     @Operation(summary = "Get a component by its ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", content = @Content(
-                    mediaType = "application/json", schema =  @Schema(implementation = ComponentResponseDto.class))),
+                    mediaType = "application/json", schema = @Schema(implementation = ComponentResponseDto.class))),
             @ApiResponse(responseCode = "404", description = "Component not found or invalid ID", content = @Content),
             @ApiResponse(responseCode = "400", description = "Invalid component ID", content = @Content)
     })
@@ -75,10 +68,7 @@ public class ComponentController {
             @Min(value = 1, message = "Component ID must be greater than zero")
             long componentId
     ) {
-        log.info("Received a Get Component request for componentId={}", componentId);
-        var component = componentService.getItem(componentId);
-        log.info("Responding with {}", component);
-        return component;
+        return service.getItem(componentId);
     }
 
     @Operation(summary = "Create a new component")
@@ -93,8 +83,7 @@ public class ComponentController {
             @Valid
             ComponentRequestDto component
     ) {
-        log.info("Received a Create Component request: {}", component);
-        return componentService.createItem(component);
+        return service.createItem(component);
     }
 
     @Operation(summary = "Edit a component")
@@ -113,8 +102,7 @@ public class ComponentController {
             @RequestBody
             ComponentRequestDto component
     ) {
-        log.info("Received an Edit Component request for componentId={} with input: {}", componentId, component);
-        componentService.editItem(componentId, component);
+        service.editItem(componentId, component);
     }
 
     @Operation(summary = "Delete a component by its ID")
@@ -130,7 +118,10 @@ public class ComponentController {
             @PathVariable
             long componentId
     ) {
-        log.info("Received a Delete Component request for componentId={}", componentId);
-        componentService.deleteItem(componentId);
+        service.deleteItem(componentId);
+    }
+
+    // for Open API Documentation
+    private static class WrappedListOfComponents extends ListResponseWrapper<ComponentResponseDto> {
     }
 }

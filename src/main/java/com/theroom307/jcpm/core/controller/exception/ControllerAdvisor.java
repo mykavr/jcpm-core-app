@@ -91,7 +91,8 @@ public class ControllerAdvisor extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Object> handleUnexpectedException() {
+    public ResponseEntity<Object> handleUnexpectedException(Exception e) {
+        log.warn("Unexpected exception: " + e.getMessage());
         return createResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, "Sorry, something went wrong");
     }
 
