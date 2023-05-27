@@ -12,7 +12,7 @@ public record ComponentRequestDto(
 
         @Schema(example = "Component description.")
         String description
-) {
+) implements IRequestDto<Component> {
     public Component toEntity() {
         var entity = new Component();
         entity.setName(name);

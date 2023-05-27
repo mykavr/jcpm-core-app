@@ -7,7 +7,7 @@ import lombok.experimental.UtilityClass;
 
 import java.time.ZonedDateTime;
 
-import static com.theroom307.jcpm.core.data.dto.ComponentResponseDto.DATE_TIME_FORMATTER;
+import static com.theroom307.jcpm.core.data.dto.IResponseDto.DATE_TIME_FORMATTER;
 
 @UtilityClass
 public class TestComponentData {

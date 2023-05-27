@@ -1,12 +1,8 @@
 package com.theroom307.jcpm.core.data.dto;
 
-import com.theroom307.jcpm.core.data.model.Product;
+import com.theroom307.jcpm.core.data.model.Item;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.With;
-
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 
 @Schema(name = "Get Product Response Body")
 @With
@@ -25,22 +21,15 @@ public record ProductResponseDto (
 
         @Schema(example = "2023-03-19T12:31:16Z")
         String modified
-) {
-    public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ISO_INSTANT.withZone(ZoneOffset.UTC);
+) implements IResponseDto {
 
-    public static ProductResponseDto fromEntity(Product entity) {
+    public static ProductResponseDto fromEntity(Item entity) {
         return new ProductResponseDto(
                 entity.getId(),
                 entity.getName(),
                 entity.getDescription(),
-                dateTimeToString(entity.getCreated()),
-                dateTimeToString(entity.getModified())
+                IResponseDto.dateTimeToString(entity.getCreated()),
+                IResponseDto.dateTimeToString(entity.getModified())
         );
-    }
-
-    private static String dateTimeToString(ZonedDateTime dateTime) {
-        return dateTime == null
-                ? null
-                : DATE_TIME_FORMATTER.format(dateTime.withNano(0));
     }
 }

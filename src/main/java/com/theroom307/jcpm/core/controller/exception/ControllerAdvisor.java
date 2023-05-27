@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.lang.Nullable;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -48,8 +49,10 @@ public class ControllerAdvisor extends ResponseEntityExceptionHandler {
      * corresponding method from the parent class.
      */
     @Override
-    public ResponseEntity<Object> handleMethodArgumentNotValid(
-            MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+    public ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
+                                                               @Nullable HttpHeaders headers,
+                                                               @Nullable HttpStatusCode status,
+                                                               @Nullable WebRequest request) {
         return createResponseEntity(HttpStatus.BAD_REQUEST,
                 ex.getFieldErrors()
                         .stream()
@@ -93,14 +96,18 @@ public class ControllerAdvisor extends ResponseEntityExceptionHandler {
     }
 
     @Override
-    protected ResponseEntity<Object> handleHttpMessageNotReadable(
-            HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+    protected ResponseEntity<Object> handleHttpMessageNotReadable(@Nullable HttpMessageNotReadableException ex,
+                                                                  @Nullable HttpHeaders headers,
+                                                                  @Nullable HttpStatusCode status,
+                                                                  @Nullable WebRequest request) {
         return createResponseEntity(HttpStatus.BAD_REQUEST, "What was that?");
     }
 
     @Override
-    protected ResponseEntity<Object> handleHttpRequestMethodNotSupported(
-            HttpRequestMethodNotSupportedException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+    protected ResponseEntity<Object> handleHttpRequestMethodNotSupported(HttpRequestMethodNotSupportedException ex,
+                                                                         @Nullable HttpHeaders headers,
+                                                                         @Nullable HttpStatusCode status,
+                                                                         @Nullable WebRequest request) {
         return createResponseEntity(HttpStatus.BAD_REQUEST, "%s method is not supported", ex.getMethod());
     }
 

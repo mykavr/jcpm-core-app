@@ -2,10 +2,10 @@ package com.theroom307.jcpm.core.unittests.controller;
 
 import com.theroom307.jcpm.core.controller.ComponentController;
 import com.theroom307.jcpm.core.data.dto.ComponentRequestDto;
-import com.theroom307.jcpm.core.data.dto.ComponentResponseDto;
 import com.theroom307.jcpm.core.data.dto.wrapper.ListResponseWrapper;
 import com.theroom307.jcpm.core.data.dto.wrapper.Pagination;
-import com.theroom307.jcpm.core.service.ComponentService;
+import com.theroom307.jcpm.core.data.model.Component;
+import com.theroom307.jcpm.core.service.ItemService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -33,16 +33,16 @@ class ComponentsEndpointTests {
     private MockMvc mockMvc;
 
     @MockBean
-    private ComponentService componentService;
+    private ItemService<Component> componentService;
 
     @Test
     void getComponents_whenNoComponentsExist_shouldReturnEmptyComponentListWrapper() throws Exception {
-        var zeroComponents = ListResponseWrapper.<ComponentResponseDto>builder()
+        var zeroComponents = ListResponseWrapper.builder()
                 .data(Collections.emptyList())
                 .pagination(new Pagination(0, 10, 0, 0))
                 .build();
 
-        when(componentService.getComponents(anyInt(), anyInt())).thenReturn(zeroComponents);
+        when(componentService.getItems(anyInt(), anyInt())).thenReturn(zeroComponents);
 
         this.mockMvc
                 .perform(get(ENDPOINT))
@@ -53,12 +53,12 @@ class ComponentsEndpointTests {
 
     @Test
     void getComponents_whenOneComponentExists_shouldReturnComponentListWrapperWithOneComponent() throws Exception {
-        var components = ListResponseWrapper.<ComponentResponseDto>builder()
+        var components = ListResponseWrapper.builder()
                 .data(List.of(getComponentResponse()))
                 .pagination(new Pagination(0, 10, 1, 1))
                 .build();
 
-        when(componentService.getComponents(anyInt(), anyInt())).thenReturn(components);
+        when(componentService.getItems(anyInt(), anyInt())).thenReturn(components);
 
         this.mockMvc
                 .perform(get(ENDPOINT))
@@ -71,12 +71,12 @@ class ComponentsEndpointTests {
     void getComponents_shouldRequestFromComponentService() throws Exception {
         this.mockMvc
                 .perform(get(ENDPOINT));
-        verify(componentService).getComponents(anyInt(), anyInt());
+        verify(componentService).getItems(anyInt(), anyInt());
     }
 
     @Test
     void postComponent_shouldSaveComponent() throws Exception {
-        when(componentService.createComponent((any(ComponentRequestDto.class))))
+        when(componentService.createItem((any(ComponentRequestDto.class))))
                 .thenReturn(1L);
 
         this.mockMvc
@@ -84,7 +84,7 @@ class ComponentsEndpointTests {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(getComponentDtoToCreateComponent()));
 
-        verify(componentService).createComponent(getComponentRequest());
+        verify(componentService).createItem(getComponentRequest());
     }
 
     @Test
@@ -92,7 +92,7 @@ class ComponentsEndpointTests {
         var savedComponentId = 1L;
         var savedComponentIdAsString = String.valueOf(savedComponentId);
 
-        when(componentService.createComponent(any(ComponentRequestDto.class)))
+        when(componentService.createItem(any(ComponentRequestDto.class)))
                 .thenReturn(savedComponentId);
 
         this.mockMvc

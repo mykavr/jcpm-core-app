@@ -2,9 +2,10 @@ package com.theroom307.jcpm.core.unittests.controller;
 
 import com.theroom307.jcpm.core.controller.ProductController;
 import com.theroom307.jcpm.core.controller.exception.BadRequestException;
-import com.theroom307.jcpm.core.controller.exception.ProductNotFoundException;
+import com.theroom307.jcpm.core.controller.exception.ItemNotFoundException;
 import com.theroom307.jcpm.core.data.dto.ProductRequestDto;
-import com.theroom307.jcpm.core.service.ProductService;
+import com.theroom307.jcpm.core.data.model.Product;
+import com.theroom307.jcpm.core.service.ItemService;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -32,11 +33,11 @@ class ProductEndpointTests {
     private MockMvc mockMvc;
 
     @MockBean
-    private ProductService productService;
+    private ItemService<Product> productService;
 
     @Test
     void getProduct_shouldReturnProductDto() throws Exception {
-        when(productService.getProduct(anyLong()))
+        when(productService.getItem(anyLong()))
                 .thenReturn(getProductResponse());
 
         var productDtoAsJson = getProductResponseAsString();
@@ -50,8 +51,8 @@ class ProductEndpointTests {
 
     @Test
     void getProduct_whenProductDoesNotExist_shouldRespond404() throws Exception {
-        when(productService.getProduct(anyLong()))
-                .thenThrow(new ProductNotFoundException(VALID_PRODUCT_ID));
+        when(productService.getItem(anyLong()))
+                .thenThrow(new ItemNotFoundException("Product", VALID_PRODUCT_ID));
 
         this.mockMvc
                 .perform(get(ENDPOINT))
@@ -63,14 +64,14 @@ class ProductEndpointTests {
 
     @Test
     void getProduct_shouldRequestFromService() throws Exception {
-        when(productService.getProduct(anyLong()))
+        when(productService.getItem(anyLong()))
                 .thenReturn(getProductResponse());
 
         this.mockMvc
                 .perform(get(ENDPOINT))
                 .andDo(print());
 
-        verify(productService).getProduct(VALID_PRODUCT_ID);
+        verify(productService).getItem(VALID_PRODUCT_ID);
     }
 
     @Test
@@ -88,7 +89,7 @@ class ProductEndpointTests {
                 .perform(delete(ENDPOINT))
                 .andDo(print());
 
-        verify(productService).deleteProduct(VALID_PRODUCT_ID);
+        verify(productService).deleteItem(VALID_PRODUCT_ID);
     }
 
     @Test
@@ -104,8 +105,8 @@ class ProductEndpointTests {
 
     @Test
     void editProduct_invalidProductId_shouldReturn404() throws Exception {
-        doThrow(new ProductNotFoundException(VALID_PRODUCT_ID))
-                .when(productService).editProduct(anyLong(), any());
+        doThrow(new ItemNotFoundException("Product", VALID_PRODUCT_ID))
+                .when(productService).editItem(anyLong(), any());
 
         this.mockMvc
                 .perform(patch(String.format(ENDPOINT))
@@ -122,7 +123,7 @@ class ProductEndpointTests {
         var errorMessage = "Invalid Product Data Error Message";
 
         doThrow(new BadRequestException(errorMessage))
-                .when(productService).editProduct(anyLong(), any());
+                .when(productService).editItem(anyLong(), any());
 
         this.mockMvc
                 .perform(patch(String.format(ENDPOINT))
@@ -186,7 +187,7 @@ class ProductEndpointTests {
                         .content(requestBody))
                 .andDo(print());
 
-        verify(productService).editProduct(VALID_PRODUCT_ID, expectedProductDto);
+        verify(productService).editItem(VALID_PRODUCT_ID, expectedProductDto);
     }
 
 }

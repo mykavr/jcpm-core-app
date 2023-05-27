@@ -1,10 +1,13 @@
 package com.theroom307.jcpm.core.controller;
 
-import com.theroom307.jcpm.core.service.ProductService;
+import com.theroom307.jcpm.core.data.dto.IResponseDto;
 import com.theroom307.jcpm.core.data.dto.ProductRequestDto;
 import com.theroom307.jcpm.core.data.dto.ProductResponseDto;
 import com.theroom307.jcpm.core.data.dto.wrapper.ListResponseWrapper;
+import com.theroom307.jcpm.core.data.model.Product;
+import com.theroom307.jcpm.core.service.ItemService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -26,17 +29,19 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 public class ProductController {
 
-    private final ProductService productService;
+    private final ItemService<Product> productService;
 
     private static final String DEFAULT_PAGE_SIZE = "10";
 
     @Operation(summary = "Get the list of all products (paginated)")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200"),
+            @ApiResponse(responseCode = "200", content = @Content(
+                    mediaType = "application/json",
+                    array = @ArraySchema(schema = @Schema(implementation = ProductResponseDto.class)))),
             @ApiResponse(responseCode = "400", description = "Invalid pagination parameters", content = @Content)
     })
     @GetMapping
-    public ListResponseWrapper<ProductResponseDto>
+    public ListResponseWrapper<IResponseDto>
     getProducts(
             @RequestParam(defaultValue = "0")
             @Schema(type = "integer", defaultValue = "0",
@@ -51,26 +56,27 @@ public class ProductController {
             int size
     ) {
         log.info("Received a Get Products request with pagination parameters: page={}, size={}", page, size);
-        var products = productService.getProducts(page, size);
+        var products = productService.getItems(page, size);
         log.info("Responding with {} products", products == null ? "null" : products.data().size());
         return products;
     }
 
     @Operation(summary = "Get a product by its ID")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200"),
+            @ApiResponse(responseCode = "200", content = @Content(
+                    mediaType = "application/json", schema =  @Schema(implementation = ProductResponseDto.class))),
             @ApiResponse(responseCode = "404", description = "Product not found or invalid ID", content = @Content),
             @ApiResponse(responseCode = "400", description = "Invalid product ID", content = @Content)
     })
     @GetMapping("/{productId}")
-    public ProductResponseDto
+    public IResponseDto
     getProductById(
             @PathVariable
             @Min(value = 1, message = "Product ID must be greater than zero")
             long productId
     ) {
         log.info("Received a Get Product request for productId={}", productId);
-        var product = productService.getProduct(productId);
+        var product = productService.getItem(productId);
         log.info("Responding with {}", product);
         return product;
     }
@@ -88,7 +94,7 @@ public class ProductController {
             ProductRequestDto product
     ) {
         log.info("Received a Create Product request: {}", product);
-        return productService.createProduct(product);
+        return productService.createItem(product);
     }
 
     @Operation(summary = "Edit a product")
@@ -108,7 +114,7 @@ public class ProductController {
             ProductRequestDto product
     ) {
         log.info("Received an Edit Product request for productId={} with input: {}", productId, product);
-        productService.editProduct(productId, product);
+        productService.editItem(productId, product);
     }
 
     @Operation(summary = "Delete a product by its ID")
@@ -125,6 +131,6 @@ public class ProductController {
             long productId
     ) {
         log.info("Received a Delete Product request for productId={}", productId);
-        productService.deleteProduct(productId);
+        productService.deleteItem(productId);
     }
 }

@@ -2,9 +2,10 @@ package com.theroom307.jcpm.core.unittests.controller;
 
 import com.theroom307.jcpm.core.controller.ComponentController;
 import com.theroom307.jcpm.core.controller.exception.BadRequestException;
-import com.theroom307.jcpm.core.controller.exception.ComponentNotFoundException;
+import com.theroom307.jcpm.core.controller.exception.ItemNotFoundException;
 import com.theroom307.jcpm.core.data.dto.ComponentRequestDto;
-import com.theroom307.jcpm.core.service.ComponentService;
+import com.theroom307.jcpm.core.data.model.Component;
+import com.theroom307.jcpm.core.service.ItemService;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -32,11 +33,11 @@ class ComponentEndpointTests {
     private MockMvc mockMvc;
 
     @MockBean
-    private ComponentService componentService;
+    private ItemService<Component> componentService;
 
     @Test
     void getComponent_shouldReturnComponentDto() throws Exception {
-        when(componentService.getComponent(anyLong()))
+        when(componentService.getItem(anyLong()))
                 .thenReturn(getComponentResponse());
 
         var componentDtoAsJson = getComponentResponseAsString();
@@ -50,8 +51,8 @@ class ComponentEndpointTests {
 
     @Test
     void getComponent_whenComponentDoesNotExist_shouldRespond404() throws Exception {
-        when(componentService.getComponent(anyLong()))
-                .thenThrow(new ComponentNotFoundException(VALID_COMPONENT_ID));
+        when(componentService.getItem(anyLong()))
+                .thenThrow(new ItemNotFoundException("Component", VALID_COMPONENT_ID));
 
         this.mockMvc
                 .perform(get(ENDPOINT))
@@ -63,14 +64,14 @@ class ComponentEndpointTests {
 
     @Test
     void getComponent_shouldRequestFromService() throws Exception {
-        when(componentService.getComponent(anyLong()))
+        when(componentService.getItem(anyLong()))
                 .thenReturn(getComponentResponse());
 
         this.mockMvc
                 .perform(get(ENDPOINT))
                 .andDo(print());
 
-        verify(componentService).getComponent(VALID_COMPONENT_ID);
+        verify(componentService).getItem(VALID_COMPONENT_ID);
     }
 
     @Test
@@ -88,7 +89,7 @@ class ComponentEndpointTests {
                 .perform(delete(ENDPOINT))
                 .andDo(print());
 
-        verify(componentService).deleteComponent(VALID_COMPONENT_ID);
+        verify(componentService).deleteItem(VALID_COMPONENT_ID);
     }
 
     @Test
@@ -104,8 +105,8 @@ class ComponentEndpointTests {
 
     @Test
     void editComponent_invalidComponentId_shouldReturn404() throws Exception {
-        doThrow(new ComponentNotFoundException(VALID_COMPONENT_ID))
-                .when(componentService).editComponent(anyLong(), any());
+        doThrow(new ItemNotFoundException("Component", VALID_COMPONENT_ID))
+                .when(componentService).editItem(anyLong(), any());
 
         this.mockMvc
                 .perform(patch(String.format(ENDPOINT))
@@ -122,7 +123,7 @@ class ComponentEndpointTests {
         var errorMessage = "Invalid Component Data Error Message";
 
         doThrow(new BadRequestException(errorMessage))
-                .when(componentService).editComponent(anyLong(), any());
+                .when(componentService).editItem(anyLong(), any());
 
         this.mockMvc
                 .perform(patch(String.format(ENDPOINT))
@@ -186,7 +187,7 @@ class ComponentEndpointTests {
                         .content(requestBody))
                 .andDo(print());
 
-        verify(componentService).editComponent(VALID_COMPONENT_ID, expectedComponentDto);
+        verify(componentService).editItem(VALID_COMPONENT_ID, expectedComponentDto);
     }
 
 }

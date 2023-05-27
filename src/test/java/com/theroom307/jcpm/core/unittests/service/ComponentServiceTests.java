@@ -1,7 +1,7 @@
 package com.theroom307.jcpm.core.unittests.service;
 
 import com.theroom307.jcpm.core.controller.exception.BadRequestException;
-import com.theroom307.jcpm.core.controller.exception.ComponentNotFoundException;
+import com.theroom307.jcpm.core.controller.exception.ItemNotFoundException;
 import com.theroom307.jcpm.core.data.dto.ComponentRequestDto;
 import com.theroom307.jcpm.core.data.dto.ComponentResponseDto;
 import com.theroom307.jcpm.core.data.dto.wrapper.ListResponseWrapper;
@@ -58,7 +58,7 @@ class ComponentServiceTests {
 
         when(componentRepository.findAll(pageable)).thenReturn(pageWithOneComponent);
 
-        var actualResult = componentService.getComponents(pageNumber, pageSize);
+        var actualResult = componentService.getItems(pageNumber, pageSize);
 
         assertThat(actualResult)
                 .as("The service should return one expected component in the list")
@@ -78,7 +78,7 @@ class ComponentServiceTests {
 
         when(componentRepository.findAll(pageable)).thenReturn(null); // JPA returns null when there are no components
 
-        var actualResult = componentService.getComponents(pageNumber, pageSize);
+        var actualResult = componentService.getItems(pageNumber, pageSize);
 
         assertThat(actualResult)
                 .as("The service should return zero components in the list")
@@ -92,18 +92,18 @@ class ComponentServiceTests {
 
         when(componentRepository.findById(component.getId())).thenReturn(Optional.of(component));
 
-        assertThat(componentService.getComponent(component.getId()))
+        assertThat(componentService.getItem(component.getId()))
                 .isEqualTo(componentDto);
     }
 
     @Test
-    void getComponent_whenComponentDoesNotExist_shouldThrowComponentNotFoundException() {
+    void getComponent_whenComponentDoesNotExist_shouldThrowItemNotFoundException() {
         var componentId = VALID_COMPONENT_ID;
 
         when(componentRepository.findById(componentId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> componentService.getComponent(componentId))
-                .isInstanceOf(ComponentNotFoundException.class)
+        assertThatThrownBy(() -> componentService.getItem(componentId))
+                .isInstanceOf(ItemNotFoundException.class)
                 .hasMessage("Component '%s' was not found", componentId);
     }
 
@@ -111,14 +111,14 @@ class ComponentServiceTests {
     void createComponent_shouldReturnComponentId() {
         when(componentRepository.save(getComponentToCreate())).thenReturn(getComponent());
 
-        assertThat(componentService.createComponent(getComponentRequest()))
+        assertThat(componentService.createItem(getComponentRequest()))
                 .isEqualTo(getComponent().getId());
     }
 
     @Test
     void deleteComponent_shouldDeleteComponentFromRepository() {
         var componentId = VALID_COMPONENT_ID;
-        componentService.deleteComponent(componentId);
+        componentService.deleteItem(componentId);
         verify(componentRepository).deleteById(componentId);
     }
 
@@ -128,7 +128,7 @@ class ComponentServiceTests {
 
         when(componentRepository.findById(anyLong())).thenReturn(Optional.of(getComponent()));
 
-        componentService.editComponent(VALID_COMPONENT_ID, componentDto);
+        componentService.editItem(VALID_COMPONENT_ID, componentDto);
 
         verify(componentRepository).updateNameById("New Component Name", VALID_COMPONENT_ID);
     }
@@ -139,7 +139,7 @@ class ComponentServiceTests {
 
         when(componentRepository.findById(anyLong())).thenReturn(Optional.of(getComponent()));
 
-        componentService.editComponent(VALID_COMPONENT_ID, componentDto);
+        componentService.editItem(VALID_COMPONENT_ID, componentDto);
 
         verify(componentRepository).updateDescriptionById("New component description.", VALID_COMPONENT_ID);
     }
@@ -150,21 +150,21 @@ class ComponentServiceTests {
 
         when(componentRepository.findById(anyLong())).thenReturn(Optional.of(getComponent()));
 
-        componentService.editComponent(VALID_COMPONENT_ID, componentDto);
+        componentService.editItem(VALID_COMPONENT_ID, componentDto);
 
         verify(componentRepository).updateNameById("New Component Name", VALID_COMPONENT_ID);
         verify(componentRepository).updateDescriptionById("New component description.", VALID_COMPONENT_ID);
     }
 
     @Test
-    void editComponent_notExistingComponentId_shouldThrowComponentNotFoundException() {
+    void editComponent_notExistingComponentId_shouldThrowItemNotFoundException() {
         var notExistingComponentId = VALID_COMPONENT_ID;
         var anyComponentDto = getComponentRequest();
 
         when(componentRepository.findById(notExistingComponentId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> componentService.editComponent(notExistingComponentId, anyComponentDto))
-                .isInstanceOf(ComponentNotFoundException.class)
+        assertThatThrownBy(() -> componentService.editItem(notExistingComponentId, anyComponentDto))
+                .isInstanceOf(ItemNotFoundException.class)
                 .hasMessage("Component '%s' was not found", notExistingComponentId);
     }
 
@@ -172,7 +172,7 @@ class ComponentServiceTests {
     void editComponent_missingComponentNameAndDescription_shouldThrowBadRequest() {
         var componentDto = new ComponentRequestDto(null, null);
 
-        assertThatThrownBy(() -> componentService.editComponent(VALID_COMPONENT_ID, componentDto))
+        assertThatThrownBy(() -> componentService.editItem(VALID_COMPONENT_ID, componentDto))
                 .isInstanceOf(BadRequestException.class)
                 .hasMessage("New value for the component name or description must be provided");
     }
@@ -182,7 +182,7 @@ class ComponentServiceTests {
     void editComponent_blankComponentName_shouldThrowBadRequest(String blankComponentName) {
         var componentDto = new ComponentRequestDto(blankComponentName, null);
 
-        assertThatThrownBy(() -> componentService.editComponent(VALID_COMPONENT_ID, componentDto))
+        assertThatThrownBy(() -> componentService.editItem(VALID_COMPONENT_ID, componentDto))
                 .isInstanceOf(BadRequestException.class)
                 .hasMessage("Component name cannot be blank");
     }

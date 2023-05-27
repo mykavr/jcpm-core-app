@@ -1,10 +1,13 @@
 package com.theroom307.jcpm.core.controller;
 
-import com.theroom307.jcpm.core.service.ComponentService;
 import com.theroom307.jcpm.core.data.dto.ComponentRequestDto;
 import com.theroom307.jcpm.core.data.dto.ComponentResponseDto;
+import com.theroom307.jcpm.core.data.dto.IResponseDto;
 import com.theroom307.jcpm.core.data.dto.wrapper.ListResponseWrapper;
+import com.theroom307.jcpm.core.data.model.Component;
+import com.theroom307.jcpm.core.service.ItemService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -26,17 +29,19 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 public class ComponentController {
 
-    private final ComponentService componentService;
+    private final ItemService<Component> componentService;
 
     private static final String DEFAULT_PAGE_SIZE = "10";
 
     @Operation(summary = "Get the list of all components (paginated)")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200"),
+            @ApiResponse(responseCode = "200", content = @Content(
+                    mediaType = "application/json",
+                    array = @ArraySchema(schema = @Schema(implementation = ComponentResponseDto.class)))),
             @ApiResponse(responseCode = "400", description = "Invalid pagination parameters", content = @Content)
     })
     @GetMapping
-    public ListResponseWrapper<ComponentResponseDto>
+    public ListResponseWrapper<IResponseDto>
     getComponents(
             @RequestParam(defaultValue = "0")
             @Schema(type = "integer", defaultValue = "0",
@@ -51,26 +56,27 @@ public class ComponentController {
             int size
     ) {
         log.info("Received a Get Components request with pagination parameters: page={}, size={}", page, size);
-        var components = componentService.getComponents(page, size);
+        var components = componentService.getItems(page, size);
         log.info("Responding with {} components", components == null ? "null" : components.data().size());
         return components;
     }
 
     @Operation(summary = "Get a component by its ID")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200"),
+            @ApiResponse(responseCode = "200", content = @Content(
+                    mediaType = "application/json", schema =  @Schema(implementation = ComponentResponseDto.class))),
             @ApiResponse(responseCode = "404", description = "Component not found or invalid ID", content = @Content),
             @ApiResponse(responseCode = "400", description = "Invalid component ID", content = @Content)
     })
     @GetMapping("/{componentId}")
-    public ComponentResponseDto
+    public IResponseDto
     getComponentById(
             @PathVariable
             @Min(value = 1, message = "Component ID must be greater than zero")
             long componentId
     ) {
         log.info("Received a Get Component request for componentId={}", componentId);
-        var component = componentService.getComponent(componentId);
+        var component = componentService.getItem(componentId);
         log.info("Responding with {}", component);
         return component;
     }
@@ -88,7 +94,7 @@ public class ComponentController {
             ComponentRequestDto component
     ) {
         log.info("Received a Create Component request: {}", component);
-        return componentService.createComponent(component);
+        return componentService.createItem(component);
     }
 
     @Operation(summary = "Edit a component")
@@ -108,7 +114,7 @@ public class ComponentController {
             ComponentRequestDto component
     ) {
         log.info("Received an Edit Component request for componentId={} with input: {}", componentId, component);
-        componentService.editComponent(componentId, component);
+        componentService.editItem(componentId, component);
     }
 
     @Operation(summary = "Delete a component by its ID")
@@ -125,6 +131,6 @@ public class ComponentController {
             long componentId
     ) {
         log.info("Received a Delete Component request for componentId={}", componentId);
-        componentService.deleteComponent(componentId);
+        componentService.deleteItem(componentId);
     }
 }

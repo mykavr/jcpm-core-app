@@ -1,8 +1,9 @@
 package com.theroom307.jcpm.core.unittests.controller;
 
 import com.theroom307.jcpm.core.controller.ComponentController;
-import com.theroom307.jcpm.core.controller.exception.ComponentNotFoundException;
-import com.theroom307.jcpm.core.service.ComponentService;
+import com.theroom307.jcpm.core.controller.exception.ItemNotFoundException;
+import com.theroom307.jcpm.core.data.model.Component;
+import com.theroom307.jcpm.core.service.ItemService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -32,11 +33,11 @@ class ComponentRelatedErrorHandlingTests {
     private MockMvc mockMvc;
 
     @MockBean
-    private ComponentService componentService;
+    private ItemService<Component> componentService;
 
     @Test
     void shouldReturnGeneralError() throws Exception {
-        when(componentService.getComponent(anyLong()))
+        when(componentService.getItem(anyLong()))
                 .thenThrow(new RuntimeException());
 
         this.mockMvc
@@ -97,8 +98,8 @@ class ComponentRelatedErrorHandlingTests {
 
     @Test
     void shouldRespond404WhenComponentDoesNotExist() throws Exception {
-        when(componentService.getComponent(anyLong()))
-                .thenThrow(new ComponentNotFoundException(1));
+        when(componentService.getItem(anyLong()))
+                .thenThrow(new ItemNotFoundException("Component", 1));
 
         this.mockMvc
                 .perform(get(ENDPOINT + "/1"))
@@ -107,7 +108,7 @@ class ComponentRelatedErrorHandlingTests {
                 .andExpect(content().string(String.format(
                         "Component '%s' was not found", 1)));
 
-        verify(componentService).getComponent(1L);
+        verify(componentService).getItem(1L);
     }
 
     @ParameterizedTest

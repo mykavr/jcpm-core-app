@@ -2,10 +2,10 @@ package com.theroom307.jcpm.core.unittests.controller;
 
 import com.theroom307.jcpm.core.controller.ProductController;
 import com.theroom307.jcpm.core.data.dto.ProductRequestDto;
-import com.theroom307.jcpm.core.data.dto.ProductResponseDto;
 import com.theroom307.jcpm.core.data.dto.wrapper.ListResponseWrapper;
 import com.theroom307.jcpm.core.data.dto.wrapper.Pagination;
-import com.theroom307.jcpm.core.service.ProductService;
+import com.theroom307.jcpm.core.data.model.Product;
+import com.theroom307.jcpm.core.service.ItemService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -33,16 +33,16 @@ class ProductsEndpointTests {
     private MockMvc mockMvc;
 
     @MockBean
-    private ProductService productService;
+    private ItemService<Product> productService;
 
     @Test
     void getProducts_whenNoProductsExist_shouldReturnEmptyProductListWrapper() throws Exception {
-        var zeroProducts = ListResponseWrapper.<ProductResponseDto>builder()
+        var zeroProducts = ListResponseWrapper.builder()
                 .data(Collections.emptyList())
                 .pagination(new Pagination(0, 10, 0, 0))
                 .build();
 
-        when(productService.getProducts(anyInt(), anyInt())).thenReturn(zeroProducts);
+        when(productService.getItems(anyInt(), anyInt())).thenReturn(zeroProducts);
 
         this.mockMvc
                 .perform(get(ENDPOINT))
@@ -53,12 +53,12 @@ class ProductsEndpointTests {
 
     @Test
     void getProducts_whenOneProductExists_shouldReturnProductListWrapperWithOneProduct() throws Exception {
-        var products = ListResponseWrapper.<ProductResponseDto>builder()
+        var products = ListResponseWrapper.builder()
                 .data(List.of(getProductResponse()))
                 .pagination(new Pagination(0, 10, 1, 1))
                 .build();
 
-        when(productService.getProducts(anyInt(), anyInt())).thenReturn(products);
+        when(productService.getItems(anyInt(), anyInt())).thenReturn(products);
 
         this.mockMvc
                 .perform(get(ENDPOINT))
@@ -71,12 +71,12 @@ class ProductsEndpointTests {
     void getProducts_shouldRequestFromProductService() throws Exception {
         this.mockMvc
                 .perform(get(ENDPOINT));
-        verify(productService).getProducts(anyInt(), anyInt());
+        verify(productService).getItems(anyInt(), anyInt());
     }
 
     @Test
     void postProduct_shouldSaveProduct() throws Exception {
-        when(productService.createProduct((any(ProductRequestDto.class))))
+        when(productService.createItem((any(ProductRequestDto.class))))
                 .thenReturn(1L);
 
         this.mockMvc
@@ -84,7 +84,7 @@ class ProductsEndpointTests {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(getProductDtoToCreateProduct()));
 
-        verify(productService).createProduct(getProductRequest());
+        verify(productService).createItem(getProductRequest());
     }
 
     @Test
@@ -92,7 +92,7 @@ class ProductsEndpointTests {
         var savedProductId = 1L;
         var savedProductIdAsString = String.valueOf(savedProductId);
 
-        when(productService.createProduct(any(ProductRequestDto.class)))
+        when(productService.createItem(any(ProductRequestDto.class)))
                 .thenReturn(savedProductId);
 
         this.mockMvc
