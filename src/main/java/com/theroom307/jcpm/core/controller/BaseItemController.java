@@ -2,9 +2,7 @@ package com.theroom307.jcpm.core.controller;
 
 import com.theroom307.jcpm.core.data.model.Item;
 import com.theroom307.jcpm.core.service.ItemService;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 abstract class BaseItemController<T extends Item> {
 
     protected final ItemService<T> service;
