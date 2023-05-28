@@ -4,16 +4,16 @@ import com.theroom307.jcpm.core.data.model.Item;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.With;
 
-@Schema(name = "Get Product Response Body")
+@Schema(name = "Get Component Response Body")
 @With
-public record ProductResponseDto (
+public record ComponentResponseDto(
         @Schema(example = "1")
         Long id,
 
-        @Schema(example = "Product Name")
+        @Schema(example = "Component Name")
         String name,
 
-        @Schema(example = "Product description.")
+        @Schema(example = "Component description.")
         String description,
 
         @Schema(example = "2023-03-19T12:31:16Z")
@@ -23,8 +23,8 @@ public record ProductResponseDto (
         String modified
 ) implements IResponseDto {
 
-    public static ProductResponseDto fromEntity(Item entity) {
-        return new ProductResponseDto(
+    public static ComponentResponseDto fromEntity(Item entity) {
+        return new ComponentResponseDto(
                 entity.getId(),
                 entity.getName(),
                 entity.getDescription(),

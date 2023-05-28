@@ -12,7 +12,7 @@ public record ProductRequestDto(
 
         @Schema(example = "Product description.")
         String description
-) {
+) implements IRequestDto<Product> {
     public Product toEntity() {
         var entity = new Product();
         entity.setName(name);

@@ -1,8 +1,9 @@
 package com.theroom307.jcpm.core.unittests.controller;
 
 import com.theroom307.jcpm.core.controller.ProductController;
-import com.theroom307.jcpm.core.controller.exception.ProductNotFoundException;
-import com.theroom307.jcpm.core.service.ProductService;
+import com.theroom307.jcpm.core.controller.exception.ItemNotFoundException;
+import com.theroom307.jcpm.core.data.model.Product;
+import com.theroom307.jcpm.core.service.ItemService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -24,7 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ProductController.class)
-class ErrorHandlingTests {
+class ProductRelatedErrorHandlingTests {
 
     private final static String ENDPOINT = "/api/v1/product";
 
@@ -32,11 +33,11 @@ class ErrorHandlingTests {
     private MockMvc mockMvc;
 
     @MockBean
-    private ProductService productService;
+    private ItemService<Product> productService;
 
     @Test
     void shouldReturnGeneralError() throws Exception {
-        when(productService.getProduct(anyLong()))
+        when(productService.getItem(anyLong()))
                 .thenThrow(new RuntimeException());
 
         this.mockMvc
@@ -97,8 +98,8 @@ class ErrorHandlingTests {
 
     @Test
     void shouldRespond404WhenProductDoesNotExist() throws Exception {
-        when(productService.getProduct(anyLong()))
-                .thenThrow(new ProductNotFoundException(1));
+        when(productService.getItem(anyLong()))
+                .thenThrow(new ItemNotFoundException("Product", 1));
 
         this.mockMvc
                 .perform(get(ENDPOINT + "/1"))
@@ -107,7 +108,7 @@ class ErrorHandlingTests {
                 .andExpect(content().string(String.format(
                         "Product '%s' was not found", 1)));
 
-        verify(productService).getProduct(1L);
+        verify(productService).getItem(1L);
     }
 
     @ParameterizedTest
