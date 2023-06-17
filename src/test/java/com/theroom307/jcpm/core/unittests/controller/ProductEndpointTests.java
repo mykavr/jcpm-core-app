@@ -6,6 +6,7 @@ import com.theroom307.jcpm.core.controller.exception.ItemNotFoundException;
 import com.theroom307.jcpm.core.data.dto.ProductRequestDto;
 import com.theroom307.jcpm.core.data.model.Product;
 import com.theroom307.jcpm.core.service.ItemService;
+import com.theroom307.jcpm.core.utils.Endpoint;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -27,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(ProductController.class)
 class ProductEndpointTests {
 
-    private final static String ENDPOINT = "/api/v1/product/" + VALID_PRODUCT_ID;
+    private final static String ENDPOINT = String.format(Endpoint.PRODUCT.getEndpoint(), VALID_PRODUCT_ID);
 
     @Autowired
     private MockMvc mockMvc;
