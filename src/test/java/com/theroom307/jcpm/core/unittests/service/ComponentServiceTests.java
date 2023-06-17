@@ -9,6 +9,7 @@ import com.theroom307.jcpm.core.data.dto.wrapper.Pagination;
 import com.theroom307.jcpm.core.data.model.Component;
 import com.theroom307.jcpm.core.data.repository.ComponentRepository;
 import com.theroom307.jcpm.core.service.impl.ComponentServiceImpl;
+import com.theroom307.jcpm.core.utils.ExpectedErrorMessage;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -104,7 +105,7 @@ class ComponentServiceTests {
 
         assertThatThrownBy(() -> componentService.getItem(componentId))
                 .isInstanceOf(ItemNotFoundException.class)
-                .hasMessage("Component '%s' was not found", componentId);
+                .hasMessage(ExpectedErrorMessage.componentNotFound(componentId));
     }
 
     @Test
@@ -165,7 +166,7 @@ class ComponentServiceTests {
 
         assertThatThrownBy(() -> componentService.editItem(notExistingComponentId, anyComponentDto))
                 .isInstanceOf(ItemNotFoundException.class)
-                .hasMessage("Component '%s' was not found", notExistingComponentId);
+                .hasMessage(ExpectedErrorMessage.componentNotFound(notExistingComponentId));
     }
 
     @Test

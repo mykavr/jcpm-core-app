@@ -6,7 +6,10 @@ import com.theroom307.jcpm.core.controller.exception.ItemNotFoundException;
 import com.theroom307.jcpm.core.data.dto.ProductRequestDto;
 import com.theroom307.jcpm.core.data.model.Product;
 import com.theroom307.jcpm.core.service.ItemService;
+import com.theroom307.jcpm.core.service.ProductComponentsService;
 import com.theroom307.jcpm.core.utils.Endpoint;
+import com.theroom307.jcpm.core.utils.ExpectedErrorMessage;
+import com.theroom307.jcpm.core.utils.Item;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -28,13 +31,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(ProductController.class)
 class ProductEndpointTests {
 
-    private final static String ENDPOINT = String.format(Endpoint.PRODUCT.getEndpoint(), VALID_PRODUCT_ID);
+    private final static String ENDPOINT = Endpoint.PRODUCT.getEndpoint(VALID_PRODUCT_ID);
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockBean
     private ItemService<Product> productService;
+
+    @MockBean
+    private ProductComponentsService productComponentsService;
 
     @Test
     void getProduct_shouldReturnProductDto() throws Exception {
@@ -53,14 +59,13 @@ class ProductEndpointTests {
     @Test
     void getProduct_whenProductDoesNotExist_shouldRespond404() throws Exception {
         when(productService.getItem(anyLong()))
-                .thenThrow(new ItemNotFoundException("Product", VALID_PRODUCT_ID));
+                .thenThrow(new ItemNotFoundException(Item.PRODUCT.toString(), VALID_PRODUCT_ID));
 
         this.mockMvc
                 .perform(get(ENDPOINT))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(content().string(String.format(
-                        "Product '%s' was not found", VALID_PRODUCT_ID)));
+                .andExpect(content().string(ExpectedErrorMessage.productNotFound(VALID_PRODUCT_ID)));
     }
 
     @Test
@@ -106,7 +111,7 @@ class ProductEndpointTests {
 
     @Test
     void editProduct_invalidProductId_shouldReturn404() throws Exception {
-        doThrow(new ItemNotFoundException("Product", VALID_PRODUCT_ID))
+        doThrow(new ItemNotFoundException(Item.PRODUCT.toString(), VALID_PRODUCT_ID))
                 .when(productService).editItem(anyLong(), any());
 
         this.mockMvc
@@ -115,8 +120,7 @@ class ProductEndpointTests {
                         .content(getProductDtoToCreateProduct()))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(content().string(String.format(
-                        "Product '%s' was not found", VALID_PRODUCT_ID)));
+                .andExpect(content().string(ExpectedErrorMessage.productNotFound(VALID_PRODUCT_ID)));
     }
 
     @Test

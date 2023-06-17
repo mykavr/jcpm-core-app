@@ -4,7 +4,10 @@ import com.theroom307.jcpm.core.controller.ProductController;
 import com.theroom307.jcpm.core.controller.exception.ItemNotFoundException;
 import com.theroom307.jcpm.core.data.model.Product;
 import com.theroom307.jcpm.core.service.ItemService;
+import com.theroom307.jcpm.core.service.ProductComponentsService;
 import com.theroom307.jcpm.core.utils.Endpoint;
+import com.theroom307.jcpm.core.utils.ExpectedErrorMessage;
+import com.theroom307.jcpm.core.utils.Item;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -35,6 +38,9 @@ class ProductRelatedErrorHandlingTests {
 
     @MockBean
     private ItemService<Product> productService;
+
+    @MockBean
+    private ProductComponentsService productComponentsService;
 
     @Test
     void shouldReturnGeneralError() throws Exception {
@@ -100,14 +106,13 @@ class ProductRelatedErrorHandlingTests {
     @Test
     void shouldRespond404WhenProductDoesNotExist() throws Exception {
         when(productService.getItem(anyLong()))
-                .thenThrow(new ItemNotFoundException("Product", 1));
+                .thenThrow(new ItemNotFoundException(Item.PRODUCT.toString(), 1));
 
         this.mockMvc
                 .perform(get(ENDPOINT + "/1"))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(content().string(String.format(
-                        "Product '%s' was not found", 1)));
+                .andExpect(content().string(ExpectedErrorMessage.productNotFound(1)));
 
         verify(productService).getItem(1L);
     }

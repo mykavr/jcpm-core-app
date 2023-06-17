@@ -1,10 +1,16 @@
 package com.theroom307.jcpm.core.utils;
 
 public enum Endpoint {
+
     PRODUCTS("/api/v1/product"),
-    PRODUCT(PRODUCTS.getEndpoint() + "/%s"), // %s: product ID
+
+    PRODUCT(PRODUCTS.getEndpoint() + "/%s"), // Path param: product ID
+
+    PRODUCT_COMPONENTS(PRODUCT.getEndpoint() + "/components"), // Path param: product ID
+
     COMPONENTS("/api/v1/component"),
-    COMPONENT(COMPONENTS.getEndpoint() + "/%s"); // %s: component ID
+
+    COMPONENT(COMPONENTS.getEndpoint() + "/%s"); // Path param: component ID
 
     private final String endpoint;
 
@@ -14,5 +20,9 @@ public enum Endpoint {
 
     public String getEndpoint() {
         return endpoint;
+    }
+
+    public String getEndpoint(Object... pathVariables) {
+        return String.format(endpoint, pathVariables);
     }
 }

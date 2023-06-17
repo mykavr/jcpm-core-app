@@ -5,6 +5,8 @@ import com.theroom307.jcpm.core.controller.exception.ItemNotFoundException;
 import com.theroom307.jcpm.core.data.model.Component;
 import com.theroom307.jcpm.core.service.ItemService;
 import com.theroom307.jcpm.core.utils.Endpoint;
+import com.theroom307.jcpm.core.utils.ExpectedErrorMessage;
+import com.theroom307.jcpm.core.utils.Item;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -100,14 +102,13 @@ class ComponentRelatedErrorHandlingTests {
     @Test
     void shouldRespond404WhenComponentDoesNotExist() throws Exception {
         when(componentService.getItem(anyLong()))
-                .thenThrow(new ItemNotFoundException("Component", 1));
+                .thenThrow(new ItemNotFoundException(Item.COMPONENT.toString(), 1));
 
         this.mockMvc
                 .perform(get(ENDPOINT + "/1"))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(content().string(String.format(
-                        "Component '%s' was not found", 1)));
+                .andExpect(content().string(ExpectedErrorMessage.componentNotFound(1)));
 
         verify(componentService).getItem(1L);
     }

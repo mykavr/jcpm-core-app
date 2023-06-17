@@ -6,6 +6,7 @@ import com.theroom307.jcpm.core.data.dto.ProductResponseDto;
 import com.theroom307.jcpm.core.data.dto.wrapper.ListResponseWrapper;
 import com.theroom307.jcpm.core.data.model.Product;
 import com.theroom307.jcpm.core.service.ItemService;
+import com.theroom307.jcpm.core.service.ProductComponentsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -25,8 +26,12 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Product API")
 public class ProductController extends BaseItemController<Product> {
 
-    protected ProductController(@Autowired ItemService<Product> service) {
+    private final ProductComponentsService productComponentsService;
+
+    protected ProductController(@Autowired ItemService<Product> service,
+                                @Autowired ProductComponentsService productComponentsService) {
         super(service);
+        this.productComponentsService = productComponentsService;
     }
 
     @Operation(summary = "Get the list of all products (paginated)")

@@ -9,6 +9,7 @@ import com.theroom307.jcpm.core.data.dto.wrapper.Pagination;
 import com.theroom307.jcpm.core.data.model.Product;
 import com.theroom307.jcpm.core.data.repository.ProductRepository;
 import com.theroom307.jcpm.core.service.impl.ProductServiceImpl;
+import com.theroom307.jcpm.core.utils.ExpectedErrorMessage;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -104,7 +105,7 @@ class ProductServiceTests {
 
         assertThatThrownBy(() -> productService.getItem(productId))
                 .isInstanceOf(ItemNotFoundException.class)
-                .hasMessage("Product '%s' was not found", productId);
+                .hasMessage(ExpectedErrorMessage.productNotFound(productId));
     }
 
     @Test
@@ -165,7 +166,7 @@ class ProductServiceTests {
 
         assertThatThrownBy(() -> productService.editItem(notExistingProductId, anyProductDto))
                 .isInstanceOf(ItemNotFoundException.class)
-                .hasMessage("Product '%s' was not found", notExistingProductId);
+                .hasMessage(ExpectedErrorMessage.productNotFound(notExistingProductId));
     }
 
     @Test

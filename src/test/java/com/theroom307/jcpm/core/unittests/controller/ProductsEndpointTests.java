@@ -6,6 +6,7 @@ import com.theroom307.jcpm.core.data.dto.wrapper.ListResponseWrapper;
 import com.theroom307.jcpm.core.data.dto.wrapper.Pagination;
 import com.theroom307.jcpm.core.data.model.Product;
 import com.theroom307.jcpm.core.service.ItemService;
+import com.theroom307.jcpm.core.service.ProductComponentsService;
 import com.theroom307.jcpm.core.utils.Endpoint;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +36,9 @@ class ProductsEndpointTests {
 
     @MockBean
     private ItemService<Product> productService;
+
+    @MockBean
+    private ProductComponentsService productComponentsService;
 
     @Test
     void getProducts_whenNoProductsExist_shouldReturnEmptyProductListWrapper() throws Exception {

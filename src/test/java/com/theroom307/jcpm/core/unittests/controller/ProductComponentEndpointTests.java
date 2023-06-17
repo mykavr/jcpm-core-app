@@ -1,0 +1,255 @@
+package com.theroom307.jcpm.core.unittests.controller;
+
+import com.theroom307.jcpm.core.controller.ProductController;
+import com.theroom307.jcpm.core.controller.exception.BadRequestException;
+import com.theroom307.jcpm.core.controller.exception.ItemNotFoundException;
+import com.theroom307.jcpm.core.controller.exception.NotFoundException;
+import com.theroom307.jcpm.core.data.model.Product;
+import com.theroom307.jcpm.core.service.ItemService;
+import com.theroom307.jcpm.core.service.ProductComponentsService;
+import com.theroom307.jcpm.core.utils.Endpoint;
+import com.theroom307.jcpm.core.utils.ExpectedErrorMessage;
+import com.theroom307.jcpm.core.utils.Item;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+
+import static com.theroom307.jcpm.core.utils.TestComponentData.VALID_COMPONENT_ID;
+import static com.theroom307.jcpm.core.utils.TestData.getAddComponentToProductRequestBody;
+import static com.theroom307.jcpm.core.utils.TestData.getRemoveComponentFromProductRequestBody;
+import static com.theroom307.jcpm.core.utils.TestProductData.VALID_PRODUCT_ID;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@WebMvcTest(ProductController.class)
+class ProductComponentEndpointTests {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
+    private ItemService<Product> productService;
+
+    @MockBean
+    private ProductComponentsService productComponentsService;
+
+    /*
+        ADD A COMPONENT TO THE PRODUCT
+     */
+
+    @Test
+    void editComponents_whenAddComponent_shouldReturn200() throws Exception {
+        this.mockMvc
+                .perform(createRequestWithPayload(getAddComponentRequestBody()))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").doesNotExist());
+    }
+
+    @Test
+    void editComponents_whenAddComponent_shouldCallProductComponentsService() throws Exception {
+        var productId = 123;
+        var componentId = 321;
+        this.mockMvc
+                .perform(createRequestWithPayload(productId, getAddComponentToProductRequestBody(componentId)))
+                .andDo(print());
+        verify(productComponentsService)
+                .editComponent(productId, componentId, true, false);
+    }
+
+    @Test
+    void editComponents_whenAddComponentToNonExistingProduct_shouldReturn404() throws Exception {
+        var productId = 123;
+
+        doThrow(new ItemNotFoundException(Item.PRODUCT.toString(), productId))
+                .when(productComponentsService).editComponent(anyLong(), anyLong(), anyBoolean(), anyBoolean());
+
+        this.mockMvc
+                .perform(createRequestWithPayload(productId, getAddComponentRequestBody()))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(content().string(ExpectedErrorMessage.productNotFound(productId)));
+    }
+
+    @Test
+    void editComponents_whenAddNonExistingComponent_shouldReturn404() throws Exception {
+        var componentId = 321;
+
+        doThrow(new ItemNotFoundException(Item.COMPONENT.toString(), componentId))
+                .when(productComponentsService).editComponent(anyLong(), anyLong(), anyBoolean(), anyBoolean());
+
+        this.mockMvc
+                .perform(createRequestWithPayload(getAddComponentToProductRequestBody(componentId)))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(content().string(ExpectedErrorMessage.componentNotFound(componentId)));
+    }
+
+    @Test
+    void editComponents_whenAddComponentIdNotProvided_shouldReturnBadRequest() throws Exception {
+        this.mockMvc
+                .perform(createRequestWithPayload(getInvalidAddRequestWithoutComponentId()))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Validation Error Message")); //TODO
+    }
+
+    @Test
+    void editComponents_whenAddComponentIdBlank_shouldReturnBadRequest() throws Exception {
+        this.mockMvc
+                .perform(createRequestWithPayload(getAddComponentToProductRequestBody(" ")))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Validation Error Message")); //TODO
+    }
+
+    /*
+        REMOVE A COMPONENT FROM THE PRODUCT
+     */
+
+    @Test
+    void editComponents_whenRemoveComponent_shouldReturn200() throws Exception {
+        this.mockMvc
+                .perform(createRequestWithPayload(getRemoveComponentRequestBody()))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").doesNotExist());
+    }
+
+    @Test
+    void editComponents_whenRemoveComponent_shouldCallProductComponentsService() throws Exception {
+        var productId = 123;
+        var componentId = 321;
+        this.mockMvc
+                .perform(createRequestWithPayload(productId, getRemoveComponentFromProductRequestBody(componentId)))
+                .andDo(print());
+        verify(productComponentsService)
+                .editComponent(productId, componentId, false, true);
+    }
+
+    @Test
+    void editComponents_whenRemoveFromNonExistingProduct_shouldReturn404() throws Exception {
+        var productId = 123;
+
+        doThrow(new ItemNotFoundException(Item.PRODUCT.toString(), productId))
+                .when(productComponentsService).editComponent(anyLong(), anyLong(), anyBoolean(), anyBoolean());
+
+        this.mockMvc
+                .perform(createRequestWithPayload(productId, getRemoveComponentRequestBody()))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(content().string(ExpectedErrorMessage.productNotFound(productId)));
+    }
+
+    @Test
+    void editComponents_whenRemoveNotAddedComponent_shouldReturn404() throws Exception {
+        var productId = 123;
+        var componentId = 321;
+        var errorMessage = ExpectedErrorMessage.productDoesNotContainComponent(productId, componentId);
+
+        doThrow(new NotFoundException(errorMessage))
+                .when(productComponentsService).editComponent(anyLong(), anyLong(), anyBoolean(), anyBoolean());
+
+        this.mockMvc
+                .perform(createRequestWithPayload(productId, getAddComponentToProductRequestBody(componentId)))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(content().string(errorMessage));
+    }
+
+    @Test
+    void editComponents_whenRemoveComponentIdNotProvided_shouldReturnBadRequest() throws Exception {
+        this.mockMvc
+                .perform(createRequestWithPayload(getInvalidRemoveRequestWithoutComponentId()))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Validation Error Message")); //TODO
+    }
+
+    @Test
+    void editComponents_whenRemoveComponentIdIsBlank_shouldReturnBadRequest() throws Exception {
+        this.mockMvc
+                .perform(createRequestWithPayload(getRemoveComponentFromProductRequestBody("")))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Validation Error Message")); //TODO
+    }
+
+    /*
+        INVALID REQUEST
+     */
+
+    @Test
+    void editComponents_whenServiceThrowsBadRequestException_shouldReturnBadRequest() throws Exception {
+        var errorMessage = "Bad Request Error Message";
+
+        doThrow(new BadRequestException(errorMessage))
+                .when(productComponentsService).editComponent(anyLong(), anyLong(), anyBoolean(), anyBoolean());
+
+        this.mockMvc
+                .perform(createRequestWithPayload(getInvalidRequestWithBothAddAndRemoveAreTrue()))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(errorMessage));
+    }
+
+    /*
+        HELPER METHODS
+     */
+
+    private String getAddComponentRequestBody() {
+        return getAddComponentToProductRequestBody(VALID_COMPONENT_ID);
+    }
+
+    private String getRemoveComponentRequestBody() {
+        return getRemoveComponentFromProductRequestBody(VALID_COMPONENT_ID);
+    }
+
+
+    private String getInvalidAddRequestWithoutComponentId() {
+        return """
+                {
+                    "add": true
+                }
+                """;
+    }
+
+    private String getInvalidRemoveRequestWithoutComponentId() {
+        return """
+                {
+                    "remove": true
+                }
+                """;
+    }
+
+    private String getInvalidRequestWithBothAddAndRemoveAreTrue() {
+        return String.format("""
+                {
+                    "component_id": "%s",
+                    "add": true,
+                    "remove": true
+                }
+                """, VALID_COMPONENT_ID);
+    }
+
+    private MockHttpServletRequestBuilder createRequestWithPayload(String payload) {
+        return createRequestWithPayload(VALID_PRODUCT_ID, payload);
+    }
+
+    private MockHttpServletRequestBuilder createRequestWithPayload(long productId, String payload) {
+        var endpoint = Endpoint.PRODUCT_COMPONENTS.getEndpoint(productId);
+        return patch(endpoint)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payload);
+    }
+
+}
