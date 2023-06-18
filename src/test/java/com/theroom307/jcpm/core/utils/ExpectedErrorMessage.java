@@ -14,6 +14,10 @@ public class ExpectedErrorMessage {
         return String.format("%s '%s' was not found", item, id);
     }
 
+    public static String componentIdIsRequired() {
+        return "'component_id' is required";
+    }
+
     public static String productDoesNotContainComponent(long productId, long componentId) {
         return String.format("%s '%s' does not contain %s '%s'", Item.PRODUCT, productId,
                 Item.COMPONENT.toString().toLowerCase(), componentId);

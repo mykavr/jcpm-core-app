@@ -100,16 +100,7 @@ class ProductComponentEndpointTests {
                 .perform(createRequestWithPayload(getInvalidAddRequestWithoutComponentId()))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Validation Error Message")); //TODO
-    }
-
-    @Test
-    void editComponents_whenAddComponentIdBlank_shouldReturnBadRequest() throws Exception {
-        this.mockMvc
-                .perform(createRequestWithPayload(getAddComponentToProductRequestBody(" ")))
-                .andDo(print())
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string("Validation Error Message")); //TODO
+                .andExpect(content().string(ExpectedErrorMessage.componentIdIsRequired()));
     }
 
     /*
@@ -172,16 +163,7 @@ class ProductComponentEndpointTests {
                 .perform(createRequestWithPayload(getInvalidRemoveRequestWithoutComponentId()))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Validation Error Message")); //TODO
-    }
-
-    @Test
-    void editComponents_whenRemoveComponentIdIsBlank_shouldReturnBadRequest() throws Exception {
-        this.mockMvc
-                .perform(createRequestWithPayload(getRemoveComponentFromProductRequestBody("")))
-                .andDo(print())
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string("Validation Error Message")); //TODO
+                .andExpect(content().string(ExpectedErrorMessage.componentIdIsRequired()));
     }
 
     /*

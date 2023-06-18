@@ -1,5 +1,6 @@
 package com.theroom307.jcpm.core.controller;
 
+import com.theroom307.jcpm.core.data.dto.EditProductComponentDto;
 import com.theroom307.jcpm.core.data.dto.IResponseDto;
 import com.theroom307.jcpm.core.data.dto.ProductRequestDto;
 import com.theroom307.jcpm.core.data.dto.ProductResponseDto;
@@ -124,6 +125,32 @@ public class ProductController extends BaseItemController<Product> {
             long productId
     ) {
         service.deleteItem(productId);
+    }
+
+    @Operation(summary = "Edit a product's components")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Changes to the product's components have been applied",
+                    content = @Content),
+            @ApiResponse(responseCode = "400",
+                    description = "Bad Request, see the details in the returned error message",
+                    content = @Content),
+            @ApiResponse(responseCode = "400",
+                    description = "The product or component was not found",
+                    content = @Content)
+    })
+    @PatchMapping("/{productId}/components")
+    public void editProductComponents(
+            @PathVariable
+            @Min(value = 1, message = "Product ID must be greater than zero")
+            long productId,
+
+            @RequestBody
+            @Valid
+            EditProductComponentDto editProductComponentDto
+    ) {
+        productComponentsService.editComponent(productId, editProductComponentDto.componentId(),
+                editProductComponentDto.add(), editProductComponentDto.remove());
     }
 
     // for Open API Documentation
