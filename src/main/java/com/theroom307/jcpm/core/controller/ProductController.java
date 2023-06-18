@@ -6,6 +6,7 @@ import com.theroom307.jcpm.core.data.dto.ProductRequestDto;
 import com.theroom307.jcpm.core.data.dto.ProductResponseDto;
 import com.theroom307.jcpm.core.data.dto.wrapper.ListResponseWrapper;
 import com.theroom307.jcpm.core.data.model.Product;
+import com.theroom307.jcpm.core.service.ItemDtoMapper;
 import com.theroom307.jcpm.core.service.ItemService;
 import com.theroom307.jcpm.core.service.ProductComponentsService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,8 +31,9 @@ public class ProductController extends BaseItemController<Product> {
     private final ProductComponentsService productComponentsService;
 
     protected ProductController(@Autowired ItemService<Product> service,
+                                @Autowired ItemDtoMapper mapper,
                                 @Autowired ProductComponentsService productComponentsService) {
-        super(service);
+        super(service, mapper);
         this.productComponentsService = productComponentsService;
     }
 
@@ -43,7 +45,7 @@ public class ProductController extends BaseItemController<Product> {
             @ApiResponse(responseCode = "400", description = "Invalid pagination parameters", content = @Content)
     })
     @GetMapping
-    public ListResponseWrapper<IResponseDto>
+    public ListResponseWrapper<ProductResponseDto>
     getProducts(
             @RequestParam(defaultValue = "0")
             @Schema(type = "integer", defaultValue = "0",
@@ -57,7 +59,8 @@ public class ProductController extends BaseItemController<Product> {
             @Min(value = 1, message = "Page size must be greater than 0")
             int size
     ) {
-        return service.getItems(page, size);
+        var products = service.getItems(page, size);
+        return mapper.mapProducts(products);
     }
 
     @Operation(summary = "Get a product by its ID")
@@ -74,7 +77,8 @@ public class ProductController extends BaseItemController<Product> {
             @Min(value = 1, message = "Product ID must be greater than zero")
             long productId
     ) {
-        return service.getItem(productId);
+        var product = service.getItem(productId);
+        return mapper.map(product);
     }
 
     @Operation(summary = "Create a new product")
@@ -87,8 +91,9 @@ public class ProductController extends BaseItemController<Product> {
     createNewProduct(
             @RequestBody
             @Valid
-            ProductRequestDto product
+            ProductRequestDto productDto
     ) {
+        var product = mapper.map(productDto);
         return service.createItem(product);
     }
 
@@ -106,8 +111,9 @@ public class ProductController extends BaseItemController<Product> {
             long productId,
 
             @RequestBody
-            ProductRequestDto product
+            ProductRequestDto productDto
     ) {
+        var product = mapper.map(productDto);
         service.editItem(productId, product);
     }
 
@@ -149,8 +155,10 @@ public class ProductController extends BaseItemController<Product> {
             @Valid
             EditProductComponentDto editProductComponentDto
     ) {
-        productComponentsService.editComponent(productId, editProductComponentDto.componentId(),
-                editProductComponentDto.add(), editProductComponentDto.remove());
+        var componentId = editProductComponentDto.componentId();
+        var add = editProductComponentDto.add();
+        var remove = editProductComponentDto.remove();
+        productComponentsService.editComponent(productId, componentId, add, remove);
     }
 
     // for Open API Documentation

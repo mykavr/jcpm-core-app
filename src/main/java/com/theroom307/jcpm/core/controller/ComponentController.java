@@ -5,6 +5,7 @@ import com.theroom307.jcpm.core.data.dto.ComponentResponseDto;
 import com.theroom307.jcpm.core.data.dto.IResponseDto;
 import com.theroom307.jcpm.core.data.dto.wrapper.ListResponseWrapper;
 import com.theroom307.jcpm.core.data.model.Component;
+import com.theroom307.jcpm.core.service.ItemDtoMapper;
 import com.theroom307.jcpm.core.service.ItemService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -25,8 +26,9 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Component API")
 public class ComponentController extends BaseItemController<Component> {
 
-    protected ComponentController(@Autowired ItemService<Component> service) {
-        super(service);
+    protected ComponentController(@Autowired ItemService<Component> service,
+                                  @Autowired ItemDtoMapper mapper) {
+        super(service, mapper);
     }
 
     @Operation(summary = "Get the list of all components (paginated)")
@@ -37,7 +39,7 @@ public class ComponentController extends BaseItemController<Component> {
             @ApiResponse(responseCode = "400", description = "Invalid pagination parameters", content = @Content)
     })
     @GetMapping
-    public ListResponseWrapper<IResponseDto>
+    public ListResponseWrapper<ComponentResponseDto>
     getComponents(
             @RequestParam(defaultValue = "0")
             @Schema(type = "integer", defaultValue = "0",
@@ -51,7 +53,8 @@ public class ComponentController extends BaseItemController<Component> {
             @Min(value = 1, message = "Page size must be greater than 0")
             int size
     ) {
-        return service.getItems(page, size);
+        var components = service.getItems(page, size);
+        return mapper.mapComponents(components);
     }
 
     @Operation(summary = "Get a component by its ID")
@@ -68,7 +71,8 @@ public class ComponentController extends BaseItemController<Component> {
             @Min(value = 1, message = "Component ID must be greater than zero")
             long componentId
     ) {
-        return service.getItem(componentId);
+        var component = service.getItem(componentId);
+        return mapper.map(component);
     }
 
     @Operation(summary = "Create a new component")
@@ -81,8 +85,9 @@ public class ComponentController extends BaseItemController<Component> {
     createNewComponent(
             @RequestBody
             @Valid
-            ComponentRequestDto component
+            ComponentRequestDto componentDto
     ) {
+        var component = mapper.map(componentDto);
         return service.createItem(component);
     }
 
@@ -100,8 +105,9 @@ public class ComponentController extends BaseItemController<Component> {
             long componentId,
 
             @RequestBody
-            ComponentRequestDto component
+            ComponentRequestDto componentDto
     ) {
+        var component = mapper.map(componentDto);
         service.editItem(componentId, component);
     }
 

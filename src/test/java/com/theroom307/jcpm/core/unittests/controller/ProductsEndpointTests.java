@@ -1,21 +1,22 @@
 package com.theroom307.jcpm.core.unittests.controller;
 
 import com.theroom307.jcpm.core.controller.ProductController;
-import com.theroom307.jcpm.core.data.dto.ProductRequestDto;
-import com.theroom307.jcpm.core.data.dto.wrapper.ListResponseWrapper;
-import com.theroom307.jcpm.core.data.dto.wrapper.Pagination;
 import com.theroom307.jcpm.core.data.model.Product;
 import com.theroom307.jcpm.core.service.ItemService;
 import com.theroom307.jcpm.core.service.ProductComponentsService;
+import com.theroom307.jcpm.core.service.impl.ItemDtoMapperImpl;
 import com.theroom307.jcpm.core.utils.Endpoint;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Collections;
 import java.util.List;
 
 import static com.theroom307.jcpm.core.utils.TestProductData.*;
@@ -27,6 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ProductController.class)
+@Import(ItemDtoMapperImpl.class)
 @MockBean(ProductComponentsService.class)
 class ProductsEndpointTests {
 
@@ -40,12 +42,9 @@ class ProductsEndpointTests {
 
     @Test
     void getProducts_whenNoProductsExist_shouldReturnEmptyProductListWrapper() throws Exception {
-        var zeroProducts = ListResponseWrapper.builder()
-                .data(Collections.emptyList())
-                .pagination(new Pagination(0, 10, 0, 0))
-                .build();
+        Page<Product> emptyPage = Page.empty(PageRequest.of(0, 10));
 
-        when(productService.getItems(anyInt(), anyInt())).thenReturn(zeroProducts);
+        when(productService.getItems(anyInt(), anyInt())).thenReturn(emptyPage);
 
         this.mockMvc
                 .perform(get(ENDPOINT))
@@ -56,11 +55,7 @@ class ProductsEndpointTests {
 
     @Test
     void getProducts_whenOneProductExists_shouldReturnProductListWrapperWithOneProduct() throws Exception {
-        var products = ListResponseWrapper.builder()
-                .data(List.of(getProductResponse()))
-                .pagination(new Pagination(0, 10, 1, 1))
-                .build();
-
+        var products = new PageImpl<>(List.of(getProduct()), PageRequest.of(0, 10), 1);
         when(productService.getItems(anyInt(), anyInt())).thenReturn(products);
 
         this.mockMvc
@@ -79,7 +74,7 @@ class ProductsEndpointTests {
 
     @Test
     void postProduct_shouldSaveProduct() throws Exception {
-        when(productService.createItem((any(ProductRequestDto.class))))
+        when(productService.createItem((any(Product.class))))
                 .thenReturn(1L);
 
         this.mockMvc
@@ -87,7 +82,7 @@ class ProductsEndpointTests {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(getProductDtoToCreateProduct()));
 
-        verify(productService).createItem(getProductRequest());
+        verify(productService).createItem(getProductToCreate());
     }
 
     @Test
@@ -95,7 +90,7 @@ class ProductsEndpointTests {
         var savedProductId = 1L;
         var savedProductIdAsString = String.valueOf(savedProductId);
 
-        when(productService.createItem(any(ProductRequestDto.class)))
+        when(productService.createItem(any(Product.class)))
                 .thenReturn(savedProductId);
 
         this.mockMvc
