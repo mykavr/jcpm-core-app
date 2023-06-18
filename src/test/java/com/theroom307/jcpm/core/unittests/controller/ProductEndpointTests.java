@@ -29,6 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ProductController.class)
+@MockBean(ProductComponentsService.class)
 class ProductEndpointTests {
 
     private final static String ENDPOINT = Endpoint.PRODUCT.getEndpoint(VALID_PRODUCT_ID);
@@ -38,9 +39,6 @@ class ProductEndpointTests {
 
     @MockBean
     private ItemService<Product> productService;
-
-    @MockBean
-    private ProductComponentsService productComponentsService;
 
     @Test
     void getProduct_shouldReturnProductDto() throws Exception {

@@ -27,6 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ProductController.class)
+@MockBean(ProductComponentsService.class)
 class ProductsEndpointTests {
 
     private final static String ENDPOINT = Endpoint.PRODUCTS.getEndpoint();
@@ -36,9 +37,6 @@ class ProductsEndpointTests {
 
     @MockBean
     private ItemService<Product> productService;
-
-    @MockBean
-    private ProductComponentsService productComponentsService;
 
     @Test
     void getProducts_whenNoProductsExist_shouldReturnEmptyProductListWrapper() throws Exception {
