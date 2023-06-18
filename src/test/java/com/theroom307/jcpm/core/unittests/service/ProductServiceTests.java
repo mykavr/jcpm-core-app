@@ -2,10 +2,6 @@ package com.theroom307.jcpm.core.unittests.service;
 
 import com.theroom307.jcpm.core.controller.exception.BadRequestException;
 import com.theroom307.jcpm.core.controller.exception.ItemNotFoundException;
-import com.theroom307.jcpm.core.data.dto.ProductRequestDto;
-import com.theroom307.jcpm.core.data.dto.ProductResponseDto;
-import com.theroom307.jcpm.core.data.dto.wrapper.ListResponseWrapper;
-import com.theroom307.jcpm.core.data.dto.wrapper.Pagination;
 import com.theroom307.jcpm.core.data.model.Product;
 import com.theroom307.jcpm.core.data.repository.ProductRepository;
 import com.theroom307.jcpm.core.service.impl.ProductServiceImpl;
@@ -21,7 +17,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,60 +36,56 @@ class ProductServiceTests {
     @Mock
     private ProductRepository productRepository;
 
-    @Test
-    void getProducts_whenOneProductExists_shouldReturnListWithOneProduct() {
-        int pageNumber = 0;
-        int pageSize = 10;
-        var pageable = Pageable.ofSize(pageSize).withPage(pageNumber);
+    private final int pageNumber = 0;
+    private final int pageSize = 10;
+    private final Pageable pageable = Pageable.ofSize(pageSize).withPage(pageNumber);
 
+    @Test
+    void getProducts_whenOneProductExists_shouldReturnPageWithOneProduct() {
         Page<Product> pageWithOneProduct = new PageImpl<>(
                 List.of(getProduct()),
                 pageable,
                 1);
-
-        var listWithOneProductDto = ListResponseWrapper.<ProductResponseDto>builder()
-                .data(List.of(getProductResponse()))
-                .pagination(new Pagination(pageNumber, pageSize, 1, 1))
-                .build();
 
         when(productRepository.findAll(pageable)).thenReturn(pageWithOneProduct);
 
         var actualResult = productService.getItems(pageNumber, pageSize);
 
         assertThat(actualResult)
-                .as("The service should return one expected product in the list")
-                .isEqualTo(listWithOneProductDto);
+                .as("The service should return a page with one expected product")
+                .isEqualTo(pageWithOneProduct);
     }
 
     @Test
-    void getProducts_whenNoProductsExist_shouldReturnEmptyList() {
-        int pageNumber = 0;
-        int pageSize = 10;
-        var pageable = Pageable.ofSize(pageSize).withPage(pageNumber);
-
-        var zeroProductsList = ListResponseWrapper.<ProductResponseDto>builder()
-                .data(Collections.emptyList())
-                .pagination(new Pagination(pageNumber, pageSize, 0, 0))
-                .build();
-
-        when(productRepository.findAll(pageable)).thenReturn(null); // JPA returns null when there are no products
+    void getProducts_whenNoProductsExist_shouldReturnEmptyPage() {
+        Page<Product> emptyPage = Page.empty(pageable);
+        when(productRepository.findAll(pageable)).thenReturn(emptyPage);
 
         var actualResult = productService.getItems(pageNumber, pageSize);
 
         assertThat(actualResult)
-                .as("The service should return zero products in the list")
-                .isEqualTo(zeroProductsList);
+                .as("The service should return an empty page")
+                .isEqualTo(emptyPage);
     }
 
     @Test
-    void getProduct_whenProductExists_shouldReturnProductDto() {
+    void getProducts_whenRepositoryReturnsNull_shouldReturnEmptyPage() {
+        when(productRepository.findAll(pageable)).thenReturn(null); // JPA may return null when there are no products
+
+        var actualResult = productService.getItems(pageNumber, pageSize);
+        assertThat(actualResult)
+                .as("The service should return an empty page")
+                .isEqualTo(Page.empty(pageable));
+    }
+
+    @Test
+    void getProduct_whenProductExists_shouldReturnProduct() {
         var product = getProduct();
-        var productDto = getProductResponse();
 
         when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
 
         assertThat(productService.getItem(product.getId()))
-                .isEqualTo(productDto);
+                .isEqualTo(product);
     }
 
     @Test
@@ -110,10 +101,13 @@ class ProductServiceTests {
 
     @Test
     void createProduct_shouldReturnProductId() {
-        when(productRepository.save(getProductToCreate())).thenReturn(getProduct());
+        var productToCreate = getProductToCreate();
+        var createdProduct = getProduct();
 
-        assertThat(productService.createItem(getProductRequest()))
-                .isEqualTo(getProduct().getId());
+        when(productRepository.save(productToCreate)).thenReturn(createdProduct);
+
+        assertThat(productService.createItem(productToCreate))
+                .isEqualTo(createdProduct.getId());
     }
 
     @Test
@@ -125,33 +119,37 @@ class ProductServiceTests {
 
     @Test
     void editProduct_changeName_shouldUpdateEditedProduct() {
-        var productDto = new ProductRequestDto("New Product Name", null);
+        var editedProduct = new Product();
+        editedProduct.setName("New Product Name");
 
         when(productRepository.findById(anyLong())).thenReturn(Optional.of(getProduct()));
 
-        productService.editItem(VALID_PRODUCT_ID, productDto);
+        productService.editItem(VALID_PRODUCT_ID, editedProduct);
 
         verify(productRepository).updateNameById("New Product Name", VALID_PRODUCT_ID);
     }
 
     @Test
     void editProduct_changeDescription_shouldUpdateEditedProduct() {
-        var productDto = new ProductRequestDto(null, "New product description.");
+        var editedProduct = new Product();
+        editedProduct.setDescription("New product description.");
 
         when(productRepository.findById(anyLong())).thenReturn(Optional.of(getProduct()));
 
-        productService.editItem(VALID_PRODUCT_ID, productDto);
+        productService.editItem(VALID_PRODUCT_ID, editedProduct);
 
         verify(productRepository).updateDescriptionById("New product description.", VALID_PRODUCT_ID);
     }
 
     @Test
     void editProduct_changeNameAndDescription_shouldUpdateEditedProduct() {
-        var productDto = new ProductRequestDto("New Product Name", "New product description.");
+        var editedProduct = new Product();
+        editedProduct.setName("New Product Name");
+        editedProduct.setDescription("New product description.");
 
         when(productRepository.findById(anyLong())).thenReturn(Optional.of(getProduct()));
 
-        productService.editItem(VALID_PRODUCT_ID, productDto);
+        productService.editItem(VALID_PRODUCT_ID, editedProduct);
 
         verify(productRepository).updateNameById("New Product Name", VALID_PRODUCT_ID);
         verify(productRepository).updateDescriptionById("New product description.", VALID_PRODUCT_ID);
@@ -160,20 +158,20 @@ class ProductServiceTests {
     @Test
     void editProduct_notExistingProductId_shouldThrowItemNotFoundException() {
         var notExistingProductId = VALID_PRODUCT_ID;
-        var anyProductDto = getProductRequest();
+        var anyProduct = getProduct();
 
         when(productRepository.findById(notExistingProductId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> productService.editItem(notExistingProductId, anyProductDto))
+        assertThatThrownBy(() -> productService.editItem(notExistingProductId, anyProduct))
                 .isInstanceOf(ItemNotFoundException.class)
                 .hasMessage(ExpectedErrorMessage.productNotFound(notExistingProductId));
     }
 
     @Test
     void editProduct_missingProductNameAndDescription_shouldThrowBadRequest() {
-        var productDto = new ProductRequestDto(null, null);
+        var product = new Product();
 
-        assertThatThrownBy(() -> productService.editItem(VALID_PRODUCT_ID, productDto))
+        assertThatThrownBy(() -> productService.editItem(VALID_PRODUCT_ID, product))
                 .isInstanceOf(BadRequestException.class)
                 .hasMessage("New value for the product name or description must be provided");
     }
@@ -181,9 +179,10 @@ class ProductServiceTests {
     @ParameterizedTest
     @ValueSource(strings = {"", " ", "\t"})
     void editProduct_blankProductName_shouldThrowBadRequest(String blankProductName) {
-        var productDto = new ProductRequestDto(blankProductName, null);
+        var product = new Product();
+        product.setName(blankProductName);
 
-        assertThatThrownBy(() -> productService.editItem(VALID_PRODUCT_ID, productDto))
+        assertThatThrownBy(() -> productService.editItem(VALID_PRODUCT_ID, product))
                 .isInstanceOf(BadRequestException.class)
                 .hasMessage("Product name cannot be blank");
     }

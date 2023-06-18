@@ -3,10 +3,10 @@ package com.theroom307.jcpm.core.unittests.controller;
 import com.theroom307.jcpm.core.controller.ProductController;
 import com.theroom307.jcpm.core.controller.exception.BadRequestException;
 import com.theroom307.jcpm.core.controller.exception.ItemNotFoundException;
-import com.theroom307.jcpm.core.data.dto.ProductRequestDto;
 import com.theroom307.jcpm.core.data.model.Product;
 import com.theroom307.jcpm.core.service.ItemService;
 import com.theroom307.jcpm.core.service.ProductComponentsService;
+import com.theroom307.jcpm.core.service.impl.ItemDtoMapperImpl;
 import com.theroom307.jcpm.core.utils.Endpoint;
 import com.theroom307.jcpm.core.utils.ExpectedErrorMessage;
 import com.theroom307.jcpm.core.utils.Item;
@@ -17,6 +17,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -30,6 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(ProductController.class)
 @MockBean(ProductComponentsService.class)
+@Import(ItemDtoMapperImpl.class)
 class ProductEndpointTests {
 
     private final static String ENDPOINT = Endpoint.PRODUCT.getEndpoint(VALID_PRODUCT_ID);
@@ -43,7 +45,7 @@ class ProductEndpointTests {
     @Test
     void getProduct_shouldReturnProductDto() throws Exception {
         when(productService.getItem(anyLong()))
-                .thenReturn(getProductResponse());
+                .thenReturn(getProduct());
 
         var productDtoAsJson = getProductResponseAsString();
 
@@ -69,7 +71,7 @@ class ProductEndpointTests {
     @Test
     void getProduct_shouldRequestFromService() throws Exception {
         when(productService.getItem(anyLong()))
-                .thenReturn(getProductResponse());
+                .thenReturn(getProduct());
 
         this.mockMvc
                 .perform(get(ENDPOINT))
@@ -140,9 +142,10 @@ class ProductEndpointTests {
     @Test
     void editProduct_nameProvided_shouldCallProductService() {
         var requestBody = "{\"name\": \"New Product Name\"}";
-        var productDto = new ProductRequestDto("New Product Name", null);
+        var product = new Product();
+        product.setName("New Product Name");
 
-        sendPatchRequestAndVerifyCallToProductService(requestBody, productDto);
+        sendPatchRequestAndVerifyCallToProductService(requestBody, product);
     }
 
     @ParameterizedTest
@@ -150,25 +153,30 @@ class ProductEndpointTests {
     void editProduct_blankNameProvided_shouldCallProductService(String blankProductName) {
         var requestBody = String.format("{\"name\": \"%s\", \"description\": \"New product description.\"}",
                 blankProductName);
-        var productDto = new ProductRequestDto(blankProductName, "New product description.");
+        var product = new Product();
+        product.setName(blankProductName);
+        product.setDescription("New product description.");
 
-        sendPatchRequestAndVerifyCallToProductService(requestBody, productDto);
+        sendPatchRequestAndVerifyCallToProductService(requestBody, product);
     }
 
     @Test
     void editProduct_descriptionProvided_shouldCallProductService() {
         var requestBody = "{\"description\": \"New product description.\"}";
-        var productDto = new ProductRequestDto(null, "New product description.");
+        var product = new Product();
+        product.setDescription("New product description.");
 
-        sendPatchRequestAndVerifyCallToProductService(requestBody, productDto);
+        sendPatchRequestAndVerifyCallToProductService(requestBody, product);
     }
 
     @Test
     void editProduct_nameAndDescriptionProvided_shouldCallProductService() {
         var requestBody = "{\"name\": \"New Product Name\", \"description\": \"New product description.\"}";
-        var productDto = new ProductRequestDto("New Product Name", "New product description.");
+        var product = new Product();
+        product.setName("New Product Name");
+        product.setDescription("New product description.");
 
-        sendPatchRequestAndVerifyCallToProductService(requestBody, productDto);
+        sendPatchRequestAndVerifyCallToProductService(requestBody, product);
     }
 
     @ParameterizedTest
@@ -177,20 +185,19 @@ class ProductEndpointTests {
             "{\"unexpected\": \"field\"}"
     })
     void editProduct_noneProvided_shouldCallProductService(String requestBody) {
-        var productDto = new ProductRequestDto(null, null);
-
-        sendPatchRequestAndVerifyCallToProductService(requestBody, productDto);
+        var product = new Product();
+        sendPatchRequestAndVerifyCallToProductService(requestBody, product);
     }
 
     @SneakyThrows
-    private void sendPatchRequestAndVerifyCallToProductService(String requestBody, ProductRequestDto expectedProductDto) {
+    private void sendPatchRequestAndVerifyCallToProductService(String requestBody, Product expectedProduct) {
         this.mockMvc
                 .perform(patch(ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andDo(print());
 
-        verify(productService).editItem(VALID_PRODUCT_ID, expectedProductDto);
+        verify(productService).editItem(VALID_PRODUCT_ID, expectedProduct);
     }
 
 }

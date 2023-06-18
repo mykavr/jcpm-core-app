@@ -1,20 +1,21 @@
 package com.theroom307.jcpm.core.unittests.controller;
 
 import com.theroom307.jcpm.core.controller.ComponentController;
-import com.theroom307.jcpm.core.data.dto.ComponentRequestDto;
-import com.theroom307.jcpm.core.data.dto.wrapper.ListResponseWrapper;
-import com.theroom307.jcpm.core.data.dto.wrapper.Pagination;
 import com.theroom307.jcpm.core.data.model.Component;
 import com.theroom307.jcpm.core.service.ItemService;
+import com.theroom307.jcpm.core.service.impl.ItemDtoMapperImpl;
 import com.theroom307.jcpm.core.utils.Endpoint;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Collections;
 import java.util.List;
 
 import static com.theroom307.jcpm.core.utils.TestComponentData.*;
@@ -26,9 +27,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ComponentController.class)
+@Import(ItemDtoMapperImpl.class)
 class ComponentsEndpointTests {
 
-    private static final String ENDPOINT = Endpoint.COMPONENTS.getEndpoint();
+    private final static String ENDPOINT = Endpoint.COMPONENTS.getEndpoint();
 
     @Autowired
     private MockMvc mockMvc;
@@ -38,12 +40,9 @@ class ComponentsEndpointTests {
 
     @Test
     void getComponents_whenNoComponentsExist_shouldReturnEmptyComponentListWrapper() throws Exception {
-        var zeroComponents = ListResponseWrapper.builder()
-                .data(Collections.emptyList())
-                .pagination(new Pagination(0, 10, 0, 0))
-                .build();
+        Page<Component> emptyPage = Page.empty(PageRequest.of(0, 10));
 
-        when(componentService.getItems(anyInt(), anyInt())).thenReturn(zeroComponents);
+        when(componentService.getItems(anyInt(), anyInt())).thenReturn(emptyPage);
 
         this.mockMvc
                 .perform(get(ENDPOINT))
@@ -54,11 +53,7 @@ class ComponentsEndpointTests {
 
     @Test
     void getComponents_whenOneComponentExists_shouldReturnComponentListWrapperWithOneComponent() throws Exception {
-        var components = ListResponseWrapper.builder()
-                .data(List.of(getComponentResponse()))
-                .pagination(new Pagination(0, 10, 1, 1))
-                .build();
-
+        var components = new PageImpl<>(List.of(getComponent()), PageRequest.of(0, 10), 1);
         when(componentService.getItems(anyInt(), anyInt())).thenReturn(components);
 
         this.mockMvc
@@ -77,7 +72,7 @@ class ComponentsEndpointTests {
 
     @Test
     void postComponent_shouldSaveComponent() throws Exception {
-        when(componentService.createItem((any(ComponentRequestDto.class))))
+        when(componentService.createItem((any(Component.class))))
                 .thenReturn(1L);
 
         this.mockMvc
@@ -85,7 +80,7 @@ class ComponentsEndpointTests {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(getComponentDtoToCreateComponent()));
 
-        verify(componentService).createItem(getComponentRequest());
+        verify(componentService).createItem(getComponentToCreate());
     }
 
     @Test
@@ -93,7 +88,7 @@ class ComponentsEndpointTests {
         var savedComponentId = 1L;
         var savedComponentIdAsString = String.valueOf(savedComponentId);
 
-        when(componentService.createItem(any(ComponentRequestDto.class)))
+        when(componentService.createItem(any(Component.class)))
                 .thenReturn(savedComponentId);
 
         this.mockMvc

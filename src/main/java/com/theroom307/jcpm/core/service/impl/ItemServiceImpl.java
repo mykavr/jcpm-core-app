@@ -2,19 +2,12 @@ package com.theroom307.jcpm.core.service.impl;
 
 import com.theroom307.jcpm.core.controller.exception.BadRequestException;
 import com.theroom307.jcpm.core.controller.exception.ItemNotFoundException;
-import com.theroom307.jcpm.core.data.dto.IRequestDto;
-import com.theroom307.jcpm.core.data.dto.IResponseDto;
-import com.theroom307.jcpm.core.data.dto.wrapper.ListResponseWrapper;
-import com.theroom307.jcpm.core.data.dto.wrapper.Pagination;
 import com.theroom307.jcpm.core.data.model.Item;
 import com.theroom307.jcpm.core.data.repository.ItemRepository;
 import com.theroom307.jcpm.core.service.ItemService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-
-import java.util.Collections;
-import java.util.List;
 
 @Slf4j
 public abstract class ItemServiceImpl<T extends Item> implements ItemService<T> {
@@ -29,8 +22,8 @@ public abstract class ItemServiceImpl<T extends Item> implements ItemService<T> 
     }
 
     @Override
-    public ListResponseWrapper<IResponseDto> getItems(int page, int size) {
-        log.info("Handling the request to get all {}s with page={}, size={}", itemType, page, size);
+    public Page<T> getItems(int page, int size) {
+        log.info("Looking for {}s with page={}, size={}", itemType, page, size);
 
         var pageable = PageRequest.of(page, size);
         var items = repository.findAll(pageable);
@@ -39,32 +32,20 @@ public abstract class ItemServiceImpl<T extends Item> implements ItemService<T> 
         if (items == null) {
             // JPA may (unexpectedly) return null when there are no products
             log.warn("No {}s were found in the repository", itemType);
-            return ListResponseWrapper.builder()
-                    .data(Collections.emptyList())
-                    .pagination(Pagination.forEmptyPage(pageable))
-                    .build();
+            return Page.empty(pageable);
         }
 
         log.info("Returning {} {}s", items.getNumberOfElements(), itemType);
-        return ListResponseWrapper.builder()
-                .data(getPageOfItemDto(items))
-                .pagination(Pagination.from(items))
-                .build();
-    }
-
-    private List<IResponseDto> getPageOfItemDto(Page<T> pageOfProducts) {
-        return pageOfProducts.stream()
-                .map(IResponseDto::fromEntity)
-                .toList();
+        return items;
     }
 
     @Override
-    public IResponseDto getItem(long itemId) {
-        log.info("Handling the request to get a {} with ID={}", itemType, itemId);
+    public T getItem(long itemId) {
+        log.info("Looking for a {} with ID={}", itemType, itemId);
         var item = repository.findById(itemId);
         if (item.isPresent()) {
             log.info("Found a {} in the repository: {}", itemType, item.get());
-            return IResponseDto.fromEntity(item.get());
+            return item.get();
         } else {
             log.info("Couldn't find a {} by ID={} in the repository", itemType, itemId);
             throw new ItemNotFoundException(itemType, itemId);
@@ -72,12 +53,8 @@ public abstract class ItemServiceImpl<T extends Item> implements ItemService<T> 
     }
 
     @Override
-    public long createItem(IRequestDto<T> dto) {
-        log.info("Handling the Create {} request for {}", itemType, dto);
-
-        var entity = dto.toEntity();
-        log.info("{} to be created: {}", itemType, entity);
-
+    public long createItem(T entity) {
+        log.info("Handling the Create {} request for {}", itemType, entity);
         var savedEntity = repository.save(entity);
         log.info("Created a {} in the repository: {}", itemType, savedEntity);
 
@@ -85,9 +62,9 @@ public abstract class ItemServiceImpl<T extends Item> implements ItemService<T> 
     }
 
     @Override
-    public void editItem(long id, IRequestDto<T> dto) {
-        var newName = dto.name();
-        var newDescription = dto.description();
+    public void editItem(long id, T updatedItem) {
+        var newName = updatedItem.getName();
+        var newDescription = updatedItem.getDescription();
 
         log.info("Handling a request to edit a {} with ID={}. New name: '{}'; new description: '{}'",
                 itemType, id, newName, newDescription);

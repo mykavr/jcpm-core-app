@@ -3,6 +3,7 @@ package com.theroom307.jcpm.core.unittests.controller;
 import com.theroom307.jcpm.core.controller.ProductController;
 import com.theroom307.jcpm.core.controller.exception.ItemNotFoundException;
 import com.theroom307.jcpm.core.data.model.Product;
+import com.theroom307.jcpm.core.service.ItemDtoMapper;
 import com.theroom307.jcpm.core.service.ItemService;
 import com.theroom307.jcpm.core.service.ProductComponentsService;
 import com.theroom307.jcpm.core.utils.Endpoint;
@@ -30,6 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(ProductController.class)
 @MockBean(ProductComponentsService.class)
+@MockBean(ItemDtoMapper.class)
 class ProductRelatedErrorHandlingTests {
 
     private final static String ENDPOINT = Endpoint.PRODUCTS.getEndpoint();
