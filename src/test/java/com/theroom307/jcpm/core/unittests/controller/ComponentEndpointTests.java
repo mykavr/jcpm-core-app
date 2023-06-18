@@ -6,6 +6,9 @@ import com.theroom307.jcpm.core.controller.exception.ItemNotFoundException;
 import com.theroom307.jcpm.core.data.dto.ComponentRequestDto;
 import com.theroom307.jcpm.core.data.model.Component;
 import com.theroom307.jcpm.core.service.ItemService;
+import com.theroom307.jcpm.core.utils.Endpoint;
+import com.theroom307.jcpm.core.utils.ExpectedErrorMessage;
+import com.theroom307.jcpm.core.utils.Item;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -27,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(ComponentController.class)
 class ComponentEndpointTests {
 
-    private final static String ENDPOINT = "/api/v1/component/" + VALID_COMPONENT_ID;
+    private final static String ENDPOINT = Endpoint.COMPONENT.getEndpoint(VALID_COMPONENT_ID);
 
     @Autowired
     private MockMvc mockMvc;
@@ -52,14 +55,13 @@ class ComponentEndpointTests {
     @Test
     void getComponent_whenComponentDoesNotExist_shouldRespond404() throws Exception {
         when(componentService.getItem(anyLong()))
-                .thenThrow(new ItemNotFoundException("Component", VALID_COMPONENT_ID));
+                .thenThrow(new ItemNotFoundException(Item.COMPONENT.toString(), VALID_COMPONENT_ID));
 
         this.mockMvc
                 .perform(get(ENDPOINT))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(content().string(String.format(
-                        "Component '%s' was not found", VALID_COMPONENT_ID)));
+                .andExpect(content().string(ExpectedErrorMessage.componentNotFound(VALID_COMPONENT_ID)));
     }
 
     @Test
@@ -95,7 +97,7 @@ class ComponentEndpointTests {
     @Test
     void editComponent_validInput_shouldReturn200() throws Exception {
         this.mockMvc
-                .perform(patch(String.format(ENDPOINT))
+                .perform(patch(ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(getComponentDtoToCreateComponent()))
                 .andDo(print())
@@ -105,17 +107,16 @@ class ComponentEndpointTests {
 
     @Test
     void editComponent_invalidComponentId_shouldReturn404() throws Exception {
-        doThrow(new ItemNotFoundException("Component", VALID_COMPONENT_ID))
+        doThrow(new ItemNotFoundException(Item.COMPONENT.toString(), VALID_COMPONENT_ID))
                 .when(componentService).editItem(anyLong(), any());
 
         this.mockMvc
-                .perform(patch(String.format(ENDPOINT))
+                .perform(patch(ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(getComponentDtoToCreateComponent()))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(content().string(String.format(
-                        "Component '%s' was not found", VALID_COMPONENT_ID)));
+                .andExpect(content().string(ExpectedErrorMessage.componentNotFound(VALID_COMPONENT_ID)));
     }
 
     @Test
@@ -126,7 +127,7 @@ class ComponentEndpointTests {
                 .when(componentService).editItem(anyLong(), any());
 
         this.mockMvc
-                .perform(patch(String.format(ENDPOINT))
+                .perform(patch(ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(getComponentDtoToCreateComponent()))
                 .andDo(print())
@@ -182,7 +183,7 @@ class ComponentEndpointTests {
     @SneakyThrows
     private void sendPatchRequestAndVerifyCallToComponentService(String requestBody, ComponentRequestDto expectedComponentDto) {
         this.mockMvc
-                .perform(patch(String.format(ENDPOINT))
+                .perform(patch(ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andDo(print());

@@ -6,6 +6,8 @@ import com.theroom307.jcpm.core.data.dto.wrapper.ListResponseWrapper;
 import com.theroom307.jcpm.core.data.dto.wrapper.Pagination;
 import com.theroom307.jcpm.core.data.model.Product;
 import com.theroom307.jcpm.core.service.ItemService;
+import com.theroom307.jcpm.core.service.ProductComponentsService;
+import com.theroom307.jcpm.core.utils.Endpoint;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -25,9 +27,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ProductController.class)
+@MockBean(ProductComponentsService.class)
 class ProductsEndpointTests {
 
-    private final static String ENDPOINT = "/api/v1/product";
+    private final static String ENDPOINT = Endpoint.PRODUCTS.getEndpoint();
 
     @Autowired
     private MockMvc mockMvc;

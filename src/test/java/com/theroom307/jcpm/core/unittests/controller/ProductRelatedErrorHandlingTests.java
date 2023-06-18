@@ -4,6 +4,10 @@ import com.theroom307.jcpm.core.controller.ProductController;
 import com.theroom307.jcpm.core.controller.exception.ItemNotFoundException;
 import com.theroom307.jcpm.core.data.model.Product;
 import com.theroom307.jcpm.core.service.ItemService;
+import com.theroom307.jcpm.core.service.ProductComponentsService;
+import com.theroom307.jcpm.core.utils.Endpoint;
+import com.theroom307.jcpm.core.utils.ExpectedErrorMessage;
+import com.theroom307.jcpm.core.utils.Item;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -25,9 +29,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ProductController.class)
+@MockBean(ProductComponentsService.class)
 class ProductRelatedErrorHandlingTests {
 
-    private final static String ENDPOINT = "/api/v1/product";
+    private final static String ENDPOINT = Endpoint.PRODUCTS.getEndpoint();
 
     @Autowired
     private MockMvc mockMvc;
@@ -44,7 +49,7 @@ class ProductRelatedErrorHandlingTests {
                 .perform(get(ENDPOINT + "/123"))
                 .andDo(print())
                 .andExpect(status().is5xxServerError())
-                .andExpect(content().string("Sorry, something went wrong"));
+                .andExpect(content().string(ExpectedErrorMessage.somethingWentWrong()));
     }
 
     @Test
@@ -53,7 +58,7 @@ class ProductRelatedErrorHandlingTests {
                 .perform(get(ENDPOINT).queryParam("size", "-1"))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Page size must be greater than 0"));
+                .andExpect(content().string(ExpectedErrorMessage.pageSizeMustBeGreaterThanZero()));
     }
 
     @Test
@@ -62,7 +67,7 @@ class ProductRelatedErrorHandlingTests {
                 .perform(get(ENDPOINT).queryParam("size", "0"))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Page size must be greater than 0"));
+                .andExpect(content().string(ExpectedErrorMessage.pageSizeMustBeGreaterThanZero()));
     }
 
     @Test
@@ -71,7 +76,7 @@ class ProductRelatedErrorHandlingTests {
                 .perform(get(ENDPOINT).queryParam("page", "-1"))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Page must not be negative"));
+                .andExpect(content().string(ExpectedErrorMessage.pageCannotBeNegative()));
     }
 
     @Test
@@ -82,8 +87,8 @@ class ProductRelatedErrorHandlingTests {
                         .queryParam("size", "0"))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(containsString("Page must not be negative")))
-                .andExpect(content().string(containsString("Page size must be greater than 0")));
+                .andExpect(content().string(containsString(ExpectedErrorMessage.pageCannotBeNegative())))
+                .andExpect(content().string(containsString(ExpectedErrorMessage.pageSizeMustBeGreaterThanZero())));
     }
 
     @ParameterizedTest
@@ -93,20 +98,19 @@ class ProductRelatedErrorHandlingTests {
                 .perform(get(ENDPOINT).queryParam(parameter, "a"))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(String.format("'%s' must be a number", parameter)));
+                .andExpect(content().string(ExpectedErrorMessage.parameterMustBeNumber(parameter)));
     }
 
     @Test
     void shouldRespond404WhenProductDoesNotExist() throws Exception {
         when(productService.getItem(anyLong()))
-                .thenThrow(new ItemNotFoundException("Product", 1));
+                .thenThrow(new ItemNotFoundException(Item.PRODUCT.toString(), 1));
 
         this.mockMvc
                 .perform(get(ENDPOINT + "/1"))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(content().string(String.format(
-                        "Product '%s' was not found", 1)));
+                .andExpect(content().string(ExpectedErrorMessage.productNotFound(1)));
 
         verify(productService).getItem(1L);
     }
@@ -137,6 +141,6 @@ class ProductRelatedErrorHandlingTests {
                         .content(createProductJson))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Product name is required"));
+                .andExpect(content().string(ExpectedErrorMessage.productNameIsRequired()));
     }
 }

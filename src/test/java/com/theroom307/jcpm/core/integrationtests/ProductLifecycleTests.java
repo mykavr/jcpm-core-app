@@ -2,6 +2,7 @@ package com.theroom307.jcpm.core.integrationtests;
 
 import com.theroom307.jcpm.core.data.model.Product;
 import com.theroom307.jcpm.core.data.repository.ProductRepository;
+import com.theroom307.jcpm.core.utils.Endpoint;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,9 +24,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 class ProductLifecycleTests {
 
-    private final static String PRODUCTS_ENDPOINT = "/api/v1/product";
+    private final static String PRODUCTS_ENDPOINT = Endpoint.PRODUCTS.getEndpoint();
 
-    private final static String PRODUCT_ENDPOINT = PRODUCTS_ENDPOINT + "/%1s"; // %1s: product ID
+    private final static String PRODUCT_ENDPOINT = Endpoint.PRODUCT.getEndpoint();
 
     @Autowired
     private MockMvc mockMvc;

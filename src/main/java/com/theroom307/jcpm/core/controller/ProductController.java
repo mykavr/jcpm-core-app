@@ -1,11 +1,13 @@
 package com.theroom307.jcpm.core.controller;
 
+import com.theroom307.jcpm.core.data.dto.EditProductComponentDto;
 import com.theroom307.jcpm.core.data.dto.IResponseDto;
 import com.theroom307.jcpm.core.data.dto.ProductRequestDto;
 import com.theroom307.jcpm.core.data.dto.ProductResponseDto;
 import com.theroom307.jcpm.core.data.dto.wrapper.ListResponseWrapper;
 import com.theroom307.jcpm.core.data.model.Product;
 import com.theroom307.jcpm.core.service.ItemService;
+import com.theroom307.jcpm.core.service.ProductComponentsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -25,8 +27,12 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Product API")
 public class ProductController extends BaseItemController<Product> {
 
-    protected ProductController(@Autowired ItemService<Product> service) {
+    private final ProductComponentsService productComponentsService;
+
+    protected ProductController(@Autowired ItemService<Product> service,
+                                @Autowired ProductComponentsService productComponentsService) {
         super(service);
+        this.productComponentsService = productComponentsService;
     }
 
     @Operation(summary = "Get the list of all products (paginated)")
@@ -119,6 +125,32 @@ public class ProductController extends BaseItemController<Product> {
             long productId
     ) {
         service.deleteItem(productId);
+    }
+
+    @Operation(summary = "Edit a product's components")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Changes to the product's components have been applied",
+                    content = @Content),
+            @ApiResponse(responseCode = "400",
+                    description = "Bad Request, see details in the returned error message",
+                    content = @Content),
+            @ApiResponse(responseCode = "404",
+                    description = "The product or component was not found",
+                    content = @Content)
+    })
+    @PatchMapping("/{productId}/components")
+    public void editProductComponents(
+            @PathVariable
+            @Min(value = 1, message = "Product ID must be greater than zero")
+            long productId,
+
+            @RequestBody
+            @Valid
+            EditProductComponentDto editProductComponentDto
+    ) {
+        productComponentsService.editComponent(productId, editProductComponentDto.componentId(),
+                editProductComponentDto.add(), editProductComponentDto.remove());
     }
 
     // for Open API Documentation

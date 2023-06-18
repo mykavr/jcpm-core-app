@@ -85,8 +85,8 @@ public class ControllerAdvisor extends ResponseEntityExceptionHandler {
         return typeName;
     }
 
-    @ExceptionHandler(ItemNotFoundException.class)
-    public ResponseEntity<Object> handleItemNotFoundException(ItemNotFoundException exception) {
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<Object> handleItemNotFoundException(NotFoundException exception) {
         return createResponseEntity(HttpStatus.NOT_FOUND, exception.getMessage());
     }
 

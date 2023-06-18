@@ -6,6 +6,10 @@ import com.theroom307.jcpm.core.controller.exception.ItemNotFoundException;
 import com.theroom307.jcpm.core.data.dto.ProductRequestDto;
 import com.theroom307.jcpm.core.data.model.Product;
 import com.theroom307.jcpm.core.service.ItemService;
+import com.theroom307.jcpm.core.service.ProductComponentsService;
+import com.theroom307.jcpm.core.utils.Endpoint;
+import com.theroom307.jcpm.core.utils.ExpectedErrorMessage;
+import com.theroom307.jcpm.core.utils.Item;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -25,9 +29,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ProductController.class)
+@MockBean(ProductComponentsService.class)
 class ProductEndpointTests {
 
-    private final static String ENDPOINT = "/api/v1/product/" + VALID_PRODUCT_ID;
+    private final static String ENDPOINT = Endpoint.PRODUCT.getEndpoint(VALID_PRODUCT_ID);
 
     @Autowired
     private MockMvc mockMvc;
@@ -52,14 +57,13 @@ class ProductEndpointTests {
     @Test
     void getProduct_whenProductDoesNotExist_shouldRespond404() throws Exception {
         when(productService.getItem(anyLong()))
-                .thenThrow(new ItemNotFoundException("Product", VALID_PRODUCT_ID));
+                .thenThrow(new ItemNotFoundException(Item.PRODUCT.toString(), VALID_PRODUCT_ID));
 
         this.mockMvc
                 .perform(get(ENDPOINT))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(content().string(String.format(
-                        "Product '%s' was not found", VALID_PRODUCT_ID)));
+                .andExpect(content().string(ExpectedErrorMessage.productNotFound(VALID_PRODUCT_ID)));
     }
 
     @Test
@@ -95,7 +99,7 @@ class ProductEndpointTests {
     @Test
     void editProduct_validInput_shouldReturn200() throws Exception {
         this.mockMvc
-                .perform(patch(String.format(ENDPOINT))
+                .perform(patch(ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(getProductDtoToCreateProduct()))
                 .andDo(print())
@@ -105,17 +109,16 @@ class ProductEndpointTests {
 
     @Test
     void editProduct_invalidProductId_shouldReturn404() throws Exception {
-        doThrow(new ItemNotFoundException("Product", VALID_PRODUCT_ID))
+        doThrow(new ItemNotFoundException(Item.PRODUCT.toString(), VALID_PRODUCT_ID))
                 .when(productService).editItem(anyLong(), any());
 
         this.mockMvc
-                .perform(patch(String.format(ENDPOINT))
+                .perform(patch(ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(getProductDtoToCreateProduct()))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(content().string(String.format(
-                        "Product '%s' was not found", VALID_PRODUCT_ID)));
+                .andExpect(content().string(ExpectedErrorMessage.productNotFound(VALID_PRODUCT_ID)));
     }
 
     @Test
@@ -126,7 +129,7 @@ class ProductEndpointTests {
                 .when(productService).editItem(anyLong(), any());
 
         this.mockMvc
-                .perform(patch(String.format(ENDPOINT))
+                .perform(patch(ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(getProductDtoToCreateProduct()))
                 .andDo(print())
@@ -182,7 +185,7 @@ class ProductEndpointTests {
     @SneakyThrows
     private void sendPatchRequestAndVerifyCallToProductService(String requestBody, ProductRequestDto expectedProductDto) {
         this.mockMvc
-                .perform(patch(String.format(ENDPOINT))
+                .perform(patch(ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andDo(print());

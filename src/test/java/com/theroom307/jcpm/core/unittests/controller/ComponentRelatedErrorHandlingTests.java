@@ -4,6 +4,9 @@ import com.theroom307.jcpm.core.controller.ComponentController;
 import com.theroom307.jcpm.core.controller.exception.ItemNotFoundException;
 import com.theroom307.jcpm.core.data.model.Component;
 import com.theroom307.jcpm.core.service.ItemService;
+import com.theroom307.jcpm.core.utils.Endpoint;
+import com.theroom307.jcpm.core.utils.ExpectedErrorMessage;
+import com.theroom307.jcpm.core.utils.Item;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -27,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(ComponentController.class)
 class ComponentRelatedErrorHandlingTests {
 
-    private final static String ENDPOINT = "/api/v1/component";
+    private final static String ENDPOINT = Endpoint.COMPONENTS.getEndpoint();
 
     @Autowired
     private MockMvc mockMvc;
@@ -44,7 +47,7 @@ class ComponentRelatedErrorHandlingTests {
                 .perform(get(ENDPOINT + "/123"))
                 .andDo(print())
                 .andExpect(status().is5xxServerError())
-                .andExpect(content().string("Sorry, something went wrong"));
+                .andExpect(content().string(ExpectedErrorMessage.somethingWentWrong()));
     }
 
     @Test
@@ -53,7 +56,7 @@ class ComponentRelatedErrorHandlingTests {
                 .perform(get(ENDPOINT).queryParam("size", "-1"))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Page size must be greater than 0"));
+                .andExpect(content().string(ExpectedErrorMessage.pageSizeMustBeGreaterThanZero()));
     }
 
     @Test
@@ -62,7 +65,7 @@ class ComponentRelatedErrorHandlingTests {
                 .perform(get(ENDPOINT).queryParam("size", "0"))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Page size must be greater than 0"));
+                .andExpect(content().string(ExpectedErrorMessage.pageSizeMustBeGreaterThanZero()));
     }
 
     @Test
@@ -71,7 +74,7 @@ class ComponentRelatedErrorHandlingTests {
                 .perform(get(ENDPOINT).queryParam("page", "-1"))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Page must not be negative"));
+                .andExpect(content().string(ExpectedErrorMessage.pageCannotBeNegative()));
     }
 
     @Test
@@ -82,8 +85,8 @@ class ComponentRelatedErrorHandlingTests {
                         .queryParam("size", "0"))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(containsString("Page must not be negative")))
-                .andExpect(content().string(containsString("Page size must be greater than 0")));
+                .andExpect(content().string(containsString(ExpectedErrorMessage.pageCannotBeNegative())))
+                .andExpect(content().string(containsString(ExpectedErrorMessage.pageSizeMustBeGreaterThanZero())));
     }
 
     @ParameterizedTest
@@ -93,20 +96,19 @@ class ComponentRelatedErrorHandlingTests {
                 .perform(get(ENDPOINT).queryParam(parameter, "a"))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(String.format("'%s' must be a number", parameter)));
+                .andExpect(content().string(ExpectedErrorMessage.parameterMustBeNumber(parameter)));
     }
 
     @Test
     void shouldRespond404WhenComponentDoesNotExist() throws Exception {
         when(componentService.getItem(anyLong()))
-                .thenThrow(new ItemNotFoundException("Component", 1));
+                .thenThrow(new ItemNotFoundException(Item.COMPONENT.toString(), 1));
 
         this.mockMvc
                 .perform(get(ENDPOINT + "/1"))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(content().string(String.format(
-                        "Component '%s' was not found", 1)));
+                .andExpect(content().string(ExpectedErrorMessage.componentNotFound(1)));
 
         verify(componentService).getItem(1L);
     }
@@ -137,6 +139,6 @@ class ComponentRelatedErrorHandlingTests {
                         .content(createComponentJson))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Component name is required"));
+                .andExpect(content().string(ExpectedErrorMessage.componentNameIsRequired()));
     }
 }
