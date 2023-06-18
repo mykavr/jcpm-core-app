@@ -18,12 +18,36 @@ public class ExpectedErrorMessage {
         return "'component_id' is required";
     }
 
+    public static String componentNameIsRequired() {
+        return "Component name is required";
+    }
+
+    public static String productNameIsRequired() {
+        return "Product name is required";
+    }
+
     public static String productDoesNotContainComponent(long productId, long componentId) {
         return String.format("%s '%s' does not contain %s '%s'", Item.PRODUCT, productId,
                 Item.COMPONENT.toString().toLowerCase(), componentId);
     }
 
     public static String invalidEditProductComponentRequest() {
-        return "Invalid request to the Edit Product's Components endpoint: both 'add' and 'remove' cannot be true";
+        return "Invalid request: both 'add' and 'remove' cannot be true";
+    }
+
+    public static String somethingWentWrong() {
+        return "Sorry, something went wrong";
+    }
+
+    public static String pageSizeMustBeGreaterThanZero() {
+        return "Page size must be greater than 0";
+    }
+
+    public static String pageCannotBeNegative() {
+        return "Page must not be negative";
+    }
+
+    public static String parameterMustBeNumber(String parameter) {
+        return String.format("'%s' must be a number", parameter);
     }
 }

@@ -97,7 +97,7 @@ class ComponentEndpointTests {
     @Test
     void editComponent_validInput_shouldReturn200() throws Exception {
         this.mockMvc
-                .perform(patch(String.format(ENDPOINT)) //todo remove String.format
+                .perform(patch(ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(getComponentDtoToCreateComponent()))
                 .andDo(print())
@@ -111,7 +111,7 @@ class ComponentEndpointTests {
                 .when(componentService).editItem(anyLong(), any());
 
         this.mockMvc
-                .perform(patch(String.format(ENDPOINT))
+                .perform(patch(ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(getComponentDtoToCreateComponent()))
                 .andDo(print())
@@ -127,7 +127,7 @@ class ComponentEndpointTests {
                 .when(componentService).editItem(anyLong(), any());
 
         this.mockMvc
-                .perform(patch(String.format(ENDPOINT))
+                .perform(patch(ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(getComponentDtoToCreateComponent()))
                 .andDo(print())
@@ -183,7 +183,7 @@ class ComponentEndpointTests {
     @SneakyThrows
     private void sendPatchRequestAndVerifyCallToComponentService(String requestBody, ComponentRequestDto expectedComponentDto) {
         this.mockMvc
-                .perform(patch(String.format(ENDPOINT))
+                .perform(patch(ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andDo(print());

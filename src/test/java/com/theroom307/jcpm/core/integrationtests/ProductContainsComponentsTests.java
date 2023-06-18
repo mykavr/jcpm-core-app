@@ -62,8 +62,8 @@ class ProductContainsComponentsTests {
         var payload = TestData.getAddComponentToProductRequestBody(component.getId());
 
         mockMvc.perform(patch(endpoint)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(payload))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload))
                 .andDo(print())
                 .andExpect(status().isOk());
 

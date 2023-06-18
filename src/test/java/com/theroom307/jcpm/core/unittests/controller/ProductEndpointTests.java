@@ -99,7 +99,7 @@ class ProductEndpointTests {
     @Test
     void editProduct_validInput_shouldReturn200() throws Exception {
         this.mockMvc
-                .perform(patch(String.format(ENDPOINT))
+                .perform(patch(ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(getProductDtoToCreateProduct()))
                 .andDo(print())
@@ -113,7 +113,7 @@ class ProductEndpointTests {
                 .when(productService).editItem(anyLong(), any());
 
         this.mockMvc
-                .perform(patch(String.format(ENDPOINT))
+                .perform(patch(ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(getProductDtoToCreateProduct()))
                 .andDo(print())
@@ -129,7 +129,7 @@ class ProductEndpointTests {
                 .when(productService).editItem(anyLong(), any());
 
         this.mockMvc
-                .perform(patch(String.format(ENDPOINT))
+                .perform(patch(ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(getProductDtoToCreateProduct()))
                 .andDo(print())
@@ -185,7 +185,7 @@ class ProductEndpointTests {
     @SneakyThrows
     private void sendPatchRequestAndVerifyCallToProductService(String requestBody, ProductRequestDto expectedProductDto) {
         this.mockMvc
-                .perform(patch(String.format(ENDPOINT))
+                .perform(patch(ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andDo(print());

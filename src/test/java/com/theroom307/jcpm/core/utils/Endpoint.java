@@ -22,7 +22,7 @@ public enum Endpoint {
         return endpoint;
     }
 
-    public String getEndpoint(Object... pathVariables) {
-        return String.format(endpoint, pathVariables);
+    public String getEndpoint(Object... pathParams) {
+        return String.format(endpoint, pathParams);
     }
 }

@@ -133,9 +133,9 @@ public class ProductController extends BaseItemController<Product> {
                     description = "Changes to the product's components have been applied",
                     content = @Content),
             @ApiResponse(responseCode = "400",
-                    description = "Bad Request, see the details in the returned error message",
+                    description = "Bad Request, see details in the returned error message",
                     content = @Content),
-            @ApiResponse(responseCode = "400",
+            @ApiResponse(responseCode = "404",
                     description = "The product or component was not found",
                     content = @Content)
     })

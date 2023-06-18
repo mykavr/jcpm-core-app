@@ -37,6 +37,9 @@ public class ProductComponent {
 
     @Override
     public int hashCode() {
-        return getClass().hashCode();
+        return getClass().hashCode()
+               + (getProduct() == null ? 0 : getProduct().hashCode())
+               + (getComponent() == null ? 0 : getComponent().hashCode())
+               + (getId() == null ? 0 : getId().hashCode());
     }
 }

@@ -27,7 +27,7 @@ public class ProductComponentsServiceImpl implements ProductComponentsService {
     @Override
     public void editComponent(long productId, long componentId, boolean add, boolean remove) {
         if (add && remove) {
-            var error = "Invalid request to the Edit Product's Components endpoint: both 'add' and 'remove' cannot be true";
+            var error = "Invalid request: both 'add' and 'remove' cannot be true";
             throw new BadRequestException(error);
         }
         var product = productRepository.findById(productId)

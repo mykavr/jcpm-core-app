@@ -46,6 +46,11 @@ public abstract class Item {
 
     @Override
     public int hashCode() {
-        return getClass().hashCode();
+        return getClass().hashCode()
+                + (getId() == null ? 0 : getId().hashCode())
+                + (getName() == null ? 0 : getName().hashCode())
+                + (getDescription() == null ? 0 : getDescription().hashCode())
+                + (getCreated() == null ? 0 : getCreated().hashCode())
+                + (getModified() == null ? 0 : getModified().hashCode());
     }
 }

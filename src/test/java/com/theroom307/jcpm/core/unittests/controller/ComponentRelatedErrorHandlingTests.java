@@ -47,7 +47,7 @@ class ComponentRelatedErrorHandlingTests {
                 .perform(get(ENDPOINT + "/123"))
                 .andDo(print())
                 .andExpect(status().is5xxServerError())
-                .andExpect(content().string("Sorry, something went wrong"));
+                .andExpect(content().string(ExpectedErrorMessage.somethingWentWrong()));
     }
 
     @Test
@@ -56,7 +56,7 @@ class ComponentRelatedErrorHandlingTests {
                 .perform(get(ENDPOINT).queryParam("size", "-1"))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Page size must be greater than 0"));
+                .andExpect(content().string(ExpectedErrorMessage.pageSizeMustBeGreaterThanZero()));
     }
 
     @Test
@@ -65,7 +65,7 @@ class ComponentRelatedErrorHandlingTests {
                 .perform(get(ENDPOINT).queryParam("size", "0"))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Page size must be greater than 0"));
+                .andExpect(content().string(ExpectedErrorMessage.pageSizeMustBeGreaterThanZero()));
     }
 
     @Test
@@ -74,7 +74,7 @@ class ComponentRelatedErrorHandlingTests {
                 .perform(get(ENDPOINT).queryParam("page", "-1"))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Page must not be negative"));
+                .andExpect(content().string(ExpectedErrorMessage.pageCannotBeNegative()));
     }
 
     @Test
@@ -85,8 +85,8 @@ class ComponentRelatedErrorHandlingTests {
                         .queryParam("size", "0"))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(containsString("Page must not be negative")))
-                .andExpect(content().string(containsString("Page size must be greater than 0")));
+                .andExpect(content().string(containsString(ExpectedErrorMessage.pageCannotBeNegative())))
+                .andExpect(content().string(containsString(ExpectedErrorMessage.pageSizeMustBeGreaterThanZero())));
     }
 
     @ParameterizedTest
@@ -96,7 +96,7 @@ class ComponentRelatedErrorHandlingTests {
                 .perform(get(ENDPOINT).queryParam(parameter, "a"))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(String.format("'%s' must be a number", parameter)));
+                .andExpect(content().string(ExpectedErrorMessage.parameterMustBeNumber(parameter)));
     }
 
     @Test
@@ -139,6 +139,6 @@ class ComponentRelatedErrorHandlingTests {
                         .content(createComponentJson))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Component name is required"));
+                .andExpect(content().string(ExpectedErrorMessage.componentNameIsRequired()));
     }
 }
