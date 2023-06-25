@@ -81,7 +81,7 @@ class ProductComponentServiceTests {
     }
 
     @Test
-    void editComponent_whenAddComponent_shouldRequestFromComponentRepository() {
+    void editComponent_whenAddComponent_shouldRequestFromComponentService() {
         mockServices();
 
         var componentId = 123L;
@@ -136,7 +136,7 @@ class ProductComponentServiceTests {
     }
 
     @Test
-    void editComponent_whenRemoveComponent_shouldRequestFromProductRepository() {
+    void editComponent_whenRemoveComponent_shouldRequestFromProductService() {
         mockProductService();
         when(productComponentRepository.findProductComponent(anyLong(), anyLong()))
                 .thenReturn(anyProductComponent());
