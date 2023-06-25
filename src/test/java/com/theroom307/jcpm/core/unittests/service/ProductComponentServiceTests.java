@@ -6,16 +6,17 @@ import com.theroom307.jcpm.core.controller.exception.NotFoundException;
 import com.theroom307.jcpm.core.data.model.Component;
 import com.theroom307.jcpm.core.data.model.Product;
 import com.theroom307.jcpm.core.data.model.ProductComponent;
-import com.theroom307.jcpm.core.data.repository.ComponentRepository;
 import com.theroom307.jcpm.core.data.repository.ProductComponentRepository;
-import com.theroom307.jcpm.core.data.repository.ProductRepository;
+import com.theroom307.jcpm.core.service.ItemService;
+import com.theroom307.jcpm.core.service.ProductComponentsService;
 import com.theroom307.jcpm.core.service.impl.ProductComponentsServiceImpl;
 import com.theroom307.jcpm.core.utils.ExpectedErrorMessage;
+import com.theroom307.jcpm.core.utils.Item;
 import com.theroom307.jcpm.core.utils.TestComponentData;
 import com.theroom307.jcpm.core.utils.TestProductData;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -31,17 +32,23 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class ProductComponentServiceTests {
 
-    @InjectMocks
-    private ProductComponentsServiceImpl service;
+    // Cannot use @InjectMocks because Mockito injects productService instead of componentService:
+    // https://github.com/mockito/mockito/issues/1066
+    private ProductComponentsService service;
 
     @Mock
-    private ProductRepository productRepository;
+    private ItemService<Product> productService;
 
     @Mock
-    private ComponentRepository componentRepository;
+    private ItemService<Component> componentService;
 
     @Mock
     private ProductComponentRepository productComponentRepository;
+
+    @BeforeEach
+    void initProductComponentsService() {
+        service = new ProductComponentsServiceImpl(productService, componentService, productComponentRepository);
+    }
 
     /*
         ADD COMPONENT TO PRODUCT
@@ -56,8 +63,8 @@ class ProductComponentServiceTests {
                 .component(component)
                 .build();
 
-        when(productRepository.findById(anyLong())).thenReturn(Optional.of(product));
-        when(componentRepository.findById(anyLong())).thenReturn(Optional.of(component));
+        when(productService.getItem(anyLong())).thenReturn(product);
+        when(componentService.getItem(anyLong())).thenReturn(component);
 
         service.editComponent(product.getId(), component.getId(), true, false);
 
@@ -65,42 +72,45 @@ class ProductComponentServiceTests {
     }
 
     @Test
-    void editComponent_whenAddComponent_shouldRequestFromProductRepository() {
-        mockRepositories();
+    void editComponent_whenAddComponent_shouldRequestFromProductService() {
+        mockServices();
 
         var productId = 123L;
         service.editComponent(productId, VALID_COMPONENT_ID, true, false);
-        verify(productRepository).findById(productId);
+        verify(productService).getItem(productId);
     }
 
     @Test
-    void editComponent_whenAddComponent_shouldRequestFromComponentRepository() {
-        mockRepositories();
+    void editComponent_whenAddComponent_shouldRequestFromComponentService() {
+        mockServices();
 
         var componentId = 123L;
         service.editComponent(VALID_PRODUCT_ID, componentId, true, false);
-        verify(componentRepository).findById(componentId);
+        verify(componentService).getItem(componentId);
     }
 
     @Test
     void editComponent_whenAddComponent_nonExistingProduct_shouldThrowProductNotFoundException() {
-        when(productRepository.findById(anyLong())).thenReturn(Optional.empty());
-
         var productId = 1234L;
+        var expectedException = new ItemNotFoundException(Item.PRODUCT.toString(), productId);
+        when(productService.getItem(anyLong())).thenThrow(expectedException);
+
         assertThatThrownBy(() -> service.editComponent(productId, VALID_COMPONENT_ID, true, false))
-                .isInstanceOf(ItemNotFoundException.class)
-                .hasMessage(ExpectedErrorMessage.productNotFound(productId));
+                .isInstanceOf(expectedException.getClass())
+                .hasMessage(expectedException.getMessage());
     }
 
     @Test
     void editComponent_whenAddComponent_nonExistingComponent_shouldThrowComponentNotFoundException() {
-        when(productRepository.findById(anyLong())).thenReturn(anyProduct());
-        when(componentRepository.findById(anyLong())).thenReturn(Optional.empty());
+        mockProductService();
 
         var componentId = 1234L;
+        var expectedException = new ItemNotFoundException(Item.COMPONENT.toString(), componentId);
+        when(componentService.getItem(anyLong())).thenThrow(expectedException);
+
         assertThatThrownBy(() -> service.editComponent(VALID_PRODUCT_ID, componentId, true, false))
-                .isInstanceOf(ItemNotFoundException.class)
-                .hasMessage(ExpectedErrorMessage.componentNotFound(componentId));
+                .isInstanceOf(expectedException.getClass())
+                .hasMessage(expectedException.getMessage());
     }
 
     /*
@@ -116,7 +126,7 @@ class ProductComponentServiceTests {
                 .component(component)
                 .build();
 
-        when(productRepository.findById(anyLong())).thenReturn(Optional.of(product));
+        when(productService.getItem(anyLong())).thenReturn(product);
         when(productComponentRepository.findProductComponent(anyLong(), anyLong()))
                 .thenReturn(Optional.of(productComponent));
 
@@ -126,19 +136,21 @@ class ProductComponentServiceTests {
     }
 
     @Test
-    void editComponent_whenRemoveComponent_shouldRequestFromProductRepository() {
-        when(productRepository.findById(anyLong())).thenReturn(anyProduct());
-        when(productComponentRepository.findProductComponent(anyLong(), anyLong())).thenReturn(anyProductComponent());
+    void editComponent_whenRemoveComponent_shouldRequestFromProductService() {
+        mockProductService();
+        when(productComponentRepository.findProductComponent(anyLong(), anyLong()))
+                .thenReturn(anyProductComponent());
 
         var productId = 123L;
         service.editComponent(productId, VALID_COMPONENT_ID, false, true);
-        verify(productRepository).findById(productId);
+        verify(productService).getItem(productId);
     }
 
     @Test
     void editComponent_whenRemoveComponent_shouldRequestFromProductComponentRepository() {
-        when(productRepository.findById(anyLong())).thenReturn(anyProduct());
-        when(productComponentRepository.findProductComponent(anyLong(), anyLong())).thenReturn(anyProductComponent());
+        mockProductService();
+        when(productComponentRepository.findProductComponent(anyLong(), anyLong()))
+                .thenReturn(anyProductComponent());
 
         var productId = 123L;
         var componentId = 321L;
@@ -148,17 +160,18 @@ class ProductComponentServiceTests {
 
     @Test
     void editComponent_whenRemoveComponent_nonExistingProduct_shouldThrowProductNotFoundException() {
-        when(productRepository.findById(anyLong())).thenReturn(Optional.empty());
-
         var productId = 1234L;
+        var expectedException = new ItemNotFoundException(Item.PRODUCT.toString(), productId);
+        when(productService.getItem(anyLong())).thenThrow(expectedException);
+
         assertThatThrownBy(() -> service.editComponent(productId, VALID_COMPONENT_ID, false, true))
-                .isInstanceOf(ItemNotFoundException.class)
-                .hasMessage(ExpectedErrorMessage.productNotFound(productId));
+                .isInstanceOf(expectedException.getClass())
+                .hasMessage(expectedException.getMessage());
     }
 
     @Test
     void editComponent_whenRemoveComponent_existingProduct_unrelatedComponent_shouldThrowNotFoundException() {
-        when(productRepository.findById(anyLong())).thenReturn(anyProduct());
+        mockProductService();
         when(productComponentRepository.findProductComponent(anyLong(), anyLong()))
                 .thenReturn(Optional.empty());
 
@@ -184,17 +197,13 @@ class ProductComponentServiceTests {
         HELPER METHODS
      */
 
-    private void mockRepositories() {
-        when(productRepository.findById(anyLong())).thenReturn(anyProduct());
-        when(componentRepository.findById(anyLong())).thenReturn(anyComponent());
+    private void mockServices() {
+        mockProductService();
+        when(componentService.getItem(anyLong())).thenReturn(TestComponentData.getComponent());
     }
 
-    private Optional<Product> anyProduct() {
-        return Optional.of(TestProductData.getProduct());
-    }
-
-    private Optional<Component> anyComponent() {
-        return Optional.of(TestComponentData.getComponent());
+    private void mockProductService() {
+        when(productService.getItem(anyLong())).thenReturn(TestProductData.getProduct());
     }
 
     private Optional<ProductComponent> anyProductComponent() {
