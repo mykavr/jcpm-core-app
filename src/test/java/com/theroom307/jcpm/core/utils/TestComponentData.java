@@ -16,7 +16,7 @@ public class TestComponentData {
 
     public static Component getComponent() {
         var entity = new Component();
-        entity.setId(123L);
+        entity.setId(VALID_COMPONENT_ID);
         entity.setName("component name");
         entity.setDescription("component description");
         entity.setCreated(ZonedDateTime.parse("2023-03-12T18:23:01Z", DATE_TIME_FORMATTER));
@@ -26,7 +26,7 @@ public class TestComponentData {
 
     public static ComponentResponseDto getComponentResponse() {
         return new ComponentResponseDto(
-                123L,
+                VALID_COMPONENT_ID,
                 "component name",
                 "component description",
                 "2023-03-12T18:23:01Z",

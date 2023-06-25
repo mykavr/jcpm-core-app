@@ -1,14 +1,12 @@
 package com.theroom307.jcpm.core.service.impl;
 
 import com.theroom307.jcpm.core.controller.exception.BadRequestException;
-import com.theroom307.jcpm.core.controller.exception.ItemNotFoundException;
 import com.theroom307.jcpm.core.controller.exception.NotFoundException;
 import com.theroom307.jcpm.core.data.model.Component;
 import com.theroom307.jcpm.core.data.model.Product;
 import com.theroom307.jcpm.core.data.model.ProductComponent;
-import com.theroom307.jcpm.core.data.repository.ComponentRepository;
 import com.theroom307.jcpm.core.data.repository.ProductComponentRepository;
-import com.theroom307.jcpm.core.data.repository.ProductRepository;
+import com.theroom307.jcpm.core.service.ItemService;
 import com.theroom307.jcpm.core.service.ProductComponentsService;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.NotImplementedException;
@@ -18,9 +16,9 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class ProductComponentsServiceImpl implements ProductComponentsService {
 
-    private ProductRepository productRepository;
+    private ItemService<Product> productService;
 
-    private ComponentRepository componentRepository;
+    private ItemService<Component> componentService;
 
     private ProductComponentRepository productComponentRepository;
 
@@ -30,11 +28,9 @@ public class ProductComponentsServiceImpl implements ProductComponentsService {
             var error = "Invalid request: both 'add' and 'remove' cannot be true";
             throw new BadRequestException(error);
         }
-        var product = productRepository.findById(productId)
-                .orElseThrow(() -> new ItemNotFoundException("Product", productId));
+        var product = productService.getItem(productId);
         if (add) {
-            var component = componentRepository.findById(componentId)
-                    .orElseThrow(() -> new ItemNotFoundException("Component", componentId));
+            var component = componentService.getItem(componentId);
             addComponentToProduct(product, component);
         } else if (remove) {
             deleteComponent(productId, componentId);

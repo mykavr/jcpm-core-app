@@ -16,7 +16,7 @@ public class TestProductData {
 
     public static Product getProduct() {
         var entity = new Product();
-        entity.setId(123L);
+        entity.setId(VALID_PRODUCT_ID);
         entity.setName("product name");
         entity.setDescription("product description");
         entity.setCreated(ZonedDateTime.parse("2023-03-12T18:23:01Z", DATE_TIME_FORMATTER));
@@ -26,7 +26,7 @@ public class TestProductData {
 
     public static ProductResponseDto getProductResponse() {
         return new ProductResponseDto(
-                123L,
+                VALID_PRODUCT_ID,
                 "product name",
                 "product description",
                 "2023-03-12T18:23:01Z",
