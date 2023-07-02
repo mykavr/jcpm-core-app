@@ -47,6 +47,10 @@ public class ExpectedErrorMessage {
         return "Page must not be negative";
     }
 
+    public static String quantityMustBePositive() {
+        return "Quantity must be greater than 0";
+    }
+
     public static String parameterMustBeNumber(String parameter) {
         return String.format("'%s' must be a number", parameter);
     }
