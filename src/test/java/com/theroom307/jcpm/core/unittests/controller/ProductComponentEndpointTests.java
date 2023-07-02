@@ -11,6 +11,8 @@ import com.theroom307.jcpm.core.utils.Endpoint;
 import com.theroom307.jcpm.core.utils.ExpectedErrorMessage;
 import com.theroom307.jcpm.core.utils.Item;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -19,16 +21,20 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import static com.theroom307.jcpm.core.utils.TestComponentData.VALID_COMPONENT_ID;
+import static com.theroom307.jcpm.core.utils.TestData.DEFAULT_COMPONENT_QUANTITY;
 import static com.theroom307.jcpm.core.utils.TestData.getAddComponentToProductRequestBody;
 import static com.theroom307.jcpm.core.utils.TestData.getRemoveComponentFromProductRequestBody;
 import static com.theroom307.jcpm.core.utils.TestProductData.VALID_PRODUCT_ID;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ProductController.class)
 @MockBean(ItemService.class)
@@ -58,11 +64,12 @@ class ProductComponentEndpointTests {
     void editComponents_whenAddComponent_shouldCallProductComponentsService() throws Exception {
         var productId = 123;
         var componentId = 321;
+        var quantity = 10;
         this.mockMvc
-                .perform(createRequestWithPayload(productId, getAddComponentToProductRequestBody(componentId)))
+                .perform(createRequestWithPayload(productId, getAddComponentToProductRequestBody(componentId, quantity)))
                 .andDo(print());
         verify(productComponentsService)
-                .editComponent(productId, componentId, true, false);
+                .editComponent(productId, componentId, quantity, true, false);
     }
 
     @Test
@@ -70,7 +77,7 @@ class ProductComponentEndpointTests {
         var productId = 123;
 
         doThrow(new ItemNotFoundException(Item.PRODUCT.toString(), productId))
-                .when(productComponentsService).editComponent(anyLong(), anyLong(), anyBoolean(), anyBoolean());
+                .when(productComponentsService).editComponent(anyLong(), anyLong(), anyInt(), anyBoolean(), anyBoolean());
 
         this.mockMvc
                 .perform(createRequestWithPayload(productId, getAddComponentRequestBody()))
@@ -84,7 +91,7 @@ class ProductComponentEndpointTests {
         var componentId = 321;
 
         doThrow(new ItemNotFoundException(Item.COMPONENT.toString(), componentId))
-                .when(productComponentsService).editComponent(anyLong(), anyLong(), anyBoolean(), anyBoolean());
+                .when(productComponentsService).editComponent(anyLong(), anyLong(), anyInt(), anyBoolean(), anyBoolean());
 
         this.mockMvc
                 .perform(createRequestWithPayload(getAddComponentToProductRequestBody(componentId)))
@@ -100,6 +107,28 @@ class ProductComponentEndpointTests {
                 .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string(ExpectedErrorMessage.componentIdIsRequired()));
+    }
+
+    @Test
+    void editComponents_whenQuantityIsNotProvided_shouldUseDefaultValue() throws Exception {
+        this.mockMvc
+                .perform(createRequestWithPayload(getAddComponentToProductRequestBody()))
+                .andDo(print());
+        verify(productComponentsService)
+                .editComponent(VALID_PRODUCT_ID, VALID_COMPONENT_ID,
+                        DEFAULT_COMPONENT_QUANTITY, true, false);
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {0, -1})
+    void editComponents_whenQuantityIsInvalid_shouldThrowAnError(int invalidQuantity) throws Exception {
+        var request = createRequestWithPayload(
+                getAddComponentToProductRequestBody(VALID_COMPONENT_ID, invalidQuantity));
+        this.mockMvc
+                .perform(request)
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(ExpectedErrorMessage.quantityMustBePositive()));
     }
 
     /*
@@ -123,7 +152,7 @@ class ProductComponentEndpointTests {
                 .perform(createRequestWithPayload(productId, getRemoveComponentFromProductRequestBody(componentId)))
                 .andDo(print());
         verify(productComponentsService)
-                .editComponent(productId, componentId, false, true);
+                .editComponent(productId, componentId, DEFAULT_COMPONENT_QUANTITY, false, true);
     }
 
     @Test
@@ -131,7 +160,7 @@ class ProductComponentEndpointTests {
         var productId = 123;
 
         doThrow(new ItemNotFoundException(Item.PRODUCT.toString(), productId))
-                .when(productComponentsService).editComponent(anyLong(), anyLong(), anyBoolean(), anyBoolean());
+                .when(productComponentsService).editComponent(anyLong(), anyLong(), anyInt(), anyBoolean(), anyBoolean());
 
         this.mockMvc
                 .perform(createRequestWithPayload(productId, getRemoveComponentRequestBody()))
@@ -147,7 +176,7 @@ class ProductComponentEndpointTests {
         var errorMessage = ExpectedErrorMessage.productDoesNotContainComponent(productId, componentId);
 
         doThrow(new NotFoundException(errorMessage))
-                .when(productComponentsService).editComponent(anyLong(), anyLong(), anyBoolean(), anyBoolean());
+                .when(productComponentsService).editComponent(anyLong(), anyLong(), anyInt(), anyBoolean(), anyBoolean());
 
         this.mockMvc
                 .perform(createRequestWithPayload(productId, getAddComponentToProductRequestBody(componentId)))
@@ -174,7 +203,7 @@ class ProductComponentEndpointTests {
         var errorMessage = "Bad Request Error Message";
 
         doThrow(new BadRequestException(errorMessage))
-                .when(productComponentsService).editComponent(anyLong(), anyLong(), anyBoolean(), anyBoolean());
+                .when(productComponentsService).editComponent(anyLong(), anyLong(), anyInt(), anyBoolean(), anyBoolean());
 
         this.mockMvc
                 .perform(createRequestWithPayload(getInvalidRequestWithBothAddAndRemoveAreTrue()))

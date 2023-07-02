@@ -9,6 +9,6 @@ public interface ProductComponentsService {
      * was not found.
      * @throws com.theroom307.jcpm.core.controller.exception.BadRequestException when add=true and remove=true
      */
-    void editComponent(long productId, long componentId, boolean add, boolean remove);
+    void editComponent(long productId, long componentId, int quantity, boolean add, boolean remove);
 
 }

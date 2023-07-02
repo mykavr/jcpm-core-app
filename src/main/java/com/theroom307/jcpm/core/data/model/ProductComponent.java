@@ -13,6 +13,7 @@ import java.util.Objects;
 @Table(name = "product_components")
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class ProductComponent {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "product_components_seq")
@@ -25,6 +26,9 @@ public class ProductComponent {
     @ManyToOne
     private Component component;
 
+    @Builder.Default
+    private Integer quantity = 1;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -32,7 +36,8 @@ public class ProductComponent {
         ProductComponent that = (ProductComponent) o;
         return Objects.equals(getId(), that.getId())
                && Objects.equals(getProduct(), that.getProduct())
-               && Objects.equals(getComponent(), that.getComponent());
+               && Objects.equals(getComponent(), that.getComponent())
+               && Objects.equals(getQuantity(), that.getQuantity());
     }
 
     @Override

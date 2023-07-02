@@ -23,7 +23,7 @@ public class ProductComponentsServiceImpl implements ProductComponentsService {
     private ProductComponentRepository productComponentRepository;
 
     @Override
-    public void editComponent(long productId, long componentId, boolean add, boolean remove) {
+    public void editComponent(long productId, long componentId, int quantity, boolean add, boolean remove) {
         if (add && remove) {
             var error = "Invalid request: both 'add' and 'remove' cannot be true";
             throw new BadRequestException(error);
@@ -31,7 +31,7 @@ public class ProductComponentsServiceImpl implements ProductComponentsService {
         var product = productService.getItem(productId);
         if (add) {
             var component = componentService.getItem(componentId);
-            addComponentToProduct(product, component);
+            addComponentToProduct(product, component, quantity);
         } else if (remove) {
             deleteComponent(productId, componentId);
         } else {
@@ -40,10 +40,11 @@ public class ProductComponentsServiceImpl implements ProductComponentsService {
         }
     }
 
-    private void addComponentToProduct(Product product, Component component) {
+    private void addComponentToProduct(Product product, Component component, int quantity) {
         var productComponent = ProductComponent.builder()
                 .product(product)
                 .component(component)
+                .quantity(quantity)
                 .build();
         productComponentRepository.save(productComponent);
     }
