@@ -2,6 +2,7 @@ package com.theroom307.jcpm.core.unittests.controller;
 
 import com.theroom307.jcpm.core.controller.ProductController;
 import com.theroom307.jcpm.core.controller.exception.BadRequestException;
+import com.theroom307.jcpm.core.controller.exception.ConditionFailedException;
 import com.theroom307.jcpm.core.controller.exception.ItemNotFoundException;
 import com.theroom307.jcpm.core.controller.exception.NotFoundException;
 import com.theroom307.jcpm.core.service.ItemDtoMapper;
@@ -91,7 +92,8 @@ class ProductComponentEndpointTests {
         var componentId = 321;
 
         doThrow(new ItemNotFoundException(Item.COMPONENT.toString(), componentId))
-                .when(productComponentsService).editComponent(anyLong(), anyLong(), anyInt(), anyBoolean(), anyBoolean());
+                .when(productComponentsService)
+                .editComponent(anyLong(), anyLong(), anyInt(), anyBoolean(), anyBoolean());
 
         this.mockMvc
                 .perform(createRequestWithPayload(getAddComponentToProductRequestBody(componentId)))
@@ -121,7 +123,7 @@ class ProductComponentEndpointTests {
 
     @ParameterizedTest
     @ValueSource(ints = {0, -1})
-    void editComponents_whenQuantityIsInvalid_shouldThrowAnError(int invalidQuantity) throws Exception {
+    void editComponents_whenQuantityIsInvalid_shouldReturnBadRequest(int invalidQuantity) throws Exception {
         var request = createRequestWithPayload(
                 getAddComponentToProductRequestBody(VALID_COMPONENT_ID, invalidQuantity));
         this.mockMvc
@@ -129,6 +131,24 @@ class ProductComponentEndpointTests {
                 .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string(ExpectedErrorMessage.quantityMustBePositive()));
+    }
+
+    @Test
+    void editComponents_whenConditionFailed_ShouldReturn409() throws Exception {
+        var errorMessage = ExpectedErrorMessage.productAlreadyContainsComponent(226, 729);
+
+        doThrow(new ConditionFailedException(errorMessage))
+                .when(productComponentsService)
+                .editComponent(anyLong(), anyLong(), anyInt(), anyBoolean(), anyBoolean());
+
+        var payload = getAddComponentToProductRequestBody();
+        var request = createRequestWithPayload(payload);
+
+        this.mockMvc
+                .perform(request)
+                .andDo(print())
+                .andExpect(status().isConflict())
+                .andExpect(content().string(errorMessage));
     }
 
     /*

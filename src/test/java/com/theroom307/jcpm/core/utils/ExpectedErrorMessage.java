@@ -31,6 +31,11 @@ public class ExpectedErrorMessage {
                 Item.COMPONENT.toString().toLowerCase(), componentId);
     }
 
+    public static String productAlreadyContainsComponent(long productId, long componentId) {
+        return String.format("%s '%s' already contains %s '%s'", Item.PRODUCT, productId,
+                Item.COMPONENT.toString().toLowerCase(), componentId);
+    }
+
     public static String invalidEditProductComponentRequest() {
         return "Invalid request: both 'add' and 'remove' cannot be true";
     }

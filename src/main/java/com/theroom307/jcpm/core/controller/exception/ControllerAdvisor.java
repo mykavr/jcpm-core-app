@@ -90,6 +90,11 @@ public class ControllerAdvisor extends ResponseEntityExceptionHandler {
         return createResponseEntity(HttpStatus.NOT_FOUND, exception.getMessage());
     }
 
+    @ExceptionHandler(ConditionFailedException.class)
+    public ResponseEntity<Object> handleConditionFailedException(ConditionFailedException e) {
+        return createResponseEntity(HttpStatus.CONFLICT, e.getMessage());
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleUnexpectedException(Exception e) {
         log.warn("Unexpected exception: " + e.getMessage());
