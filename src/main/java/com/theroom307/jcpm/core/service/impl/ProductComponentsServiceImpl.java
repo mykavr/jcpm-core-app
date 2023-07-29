@@ -1,6 +1,7 @@
 package com.theroom307.jcpm.core.service.impl;
 
 import com.theroom307.jcpm.core.controller.exception.BadRequestException;
+import com.theroom307.jcpm.core.controller.exception.ConditionFailedException;
 import com.theroom307.jcpm.core.controller.exception.NotFoundException;
 import com.theroom307.jcpm.core.data.model.Component;
 import com.theroom307.jcpm.core.data.model.Product;
@@ -41,6 +42,7 @@ public class ProductComponentsServiceImpl implements ProductComponentsService {
     }
 
     private void addComponentToProduct(Product product, Component component, int quantity) {
+        checkThatProductDoesNotContainComponent(product, component);
         var productComponent = ProductComponent.builder()
                 .product(product)
                 .component(component)
@@ -49,12 +51,25 @@ public class ProductComponentsServiceImpl implements ProductComponentsService {
         productComponentRepository.save(productComponent);
     }
 
+    private void checkThatProductDoesNotContainComponent(Product product, Component component) {
+        if (productComponentRepository
+                .findProductComponent(product.getId(), component.getId())
+                .isPresent()) {
+            throwProductAlreadyContainsComponentException(product.getId(), component.getId());
+        }
+    }
+
     private void deleteComponent(long productId, long componentId) {
         productComponentRepository
                 .findProductComponent(productId, componentId)
                 .ifPresentOrElse(productComponentRepository::delete,
                         () -> throwProductDoesNotContainComponentException(productId, componentId));
 
+    }
+
+    private void throwProductAlreadyContainsComponentException(long productId, long componentId) {
+        throw new ConditionFailedException(String.format("Product '%s' already contains component '%s'",
+                productId, componentId));
     }
 
     private void throwProductDoesNotContainComponentException(long productId, long componentId) {

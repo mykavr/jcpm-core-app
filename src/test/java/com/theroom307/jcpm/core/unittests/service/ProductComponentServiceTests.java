@@ -1,6 +1,7 @@
 package com.theroom307.jcpm.core.unittests.service;
 
 import com.theroom307.jcpm.core.controller.exception.BadRequestException;
+import com.theroom307.jcpm.core.controller.exception.ConditionFailedException;
 import com.theroom307.jcpm.core.controller.exception.ItemNotFoundException;
 import com.theroom307.jcpm.core.controller.exception.NotFoundException;
 import com.theroom307.jcpm.core.data.model.Component;
@@ -63,7 +64,7 @@ class ProductComponentServiceTests {
         var productComponent = ProductComponent.builder()
                 .product(product)
                 .component(component)
-                .quantity(7)
+                .quantity(quantity)
                 .build();
 
         when(productService.getItem(anyLong())).thenReturn(product);
@@ -114,6 +115,22 @@ class ProductComponentServiceTests {
         assertThatThrownBy(() -> callAddComponentMethod(VALID_PRODUCT_ID, componentId, DEFAULT_COMPONENT_QUANTITY))
                 .isInstanceOf(expectedException.getClass())
                 .hasMessage(expectedException.getMessage());
+    }
+
+    @Test
+    void editComponent_whenAddComponent_componentAlreadyAdded_shouldThrowConditionFailedException() {
+        mockServices();
+
+        var productComponent = anyProductComponent().orElseThrow(/*should always be present*/);
+        var productId = productComponent.getProduct().getId();
+        var componentId = productComponent.getComponent().getId();
+
+        when(productComponentRepository.findProductComponent(productId, componentId))
+                .thenReturn(Optional.of(productComponent));
+
+        assertThatThrownBy(() -> callAddComponentMethod(productId, componentId, DEFAULT_COMPONENT_QUANTITY))
+                .isInstanceOf(ConditionFailedException.class)
+                .hasMessage(ExpectedErrorMessage.productAlreadyContainsComponent(productId, componentId));
     }
 
     /*
