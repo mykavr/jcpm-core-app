@@ -41,6 +41,11 @@ public class ProductComponentsServiceImpl implements ProductComponentsService {
         }
     }
 
+    @Override
+    public boolean isComponentInUse(long componentId) {
+        return productComponentRepository.countComponentUsage(componentId) > 0;
+    }
+
     private void addComponentToProduct(Product product, Component component, int quantity) {
         checkThatProductDoesNotContainComponent(product, component);
         var productComponent = ProductComponent.builder()

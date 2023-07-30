@@ -3,6 +3,7 @@ package com.theroom307.jcpm.core.unittests.controller;
 import com.theroom307.jcpm.core.controller.ComponentController;
 import com.theroom307.jcpm.core.data.model.Component;
 import com.theroom307.jcpm.core.service.ItemService;
+import com.theroom307.jcpm.core.service.ProductComponentsService;
 import com.theroom307.jcpm.core.service.impl.ItemDtoMapperImpl;
 import com.theroom307.jcpm.core.utils.Endpoint;
 import org.junit.jupiter.api.Test;
@@ -28,6 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(ComponentController.class)
 @Import(ItemDtoMapperImpl.class)
+@MockBean(ProductComponentsService.class)
 class ComponentsEndpointTests {
 
     private final static String ENDPOINT = Endpoint.COMPONENTS.getEndpoint();

@@ -14,4 +14,8 @@ public enum Item {
     public String toString() {
         return name;
     }
+
+    public String toLowerCase() {
+        return name.toLowerCase();
+    }
 }

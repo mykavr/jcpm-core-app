@@ -5,6 +5,7 @@ import com.theroom307.jcpm.core.controller.exception.BadRequestException;
 import com.theroom307.jcpm.core.controller.exception.ItemNotFoundException;
 import com.theroom307.jcpm.core.data.model.Component;
 import com.theroom307.jcpm.core.service.ItemService;
+import com.theroom307.jcpm.core.service.ProductComponentsService;
 import com.theroom307.jcpm.core.service.impl.ItemDtoMapperImpl;
 import com.theroom307.jcpm.core.utils.Endpoint;
 import com.theroom307.jcpm.core.utils.ExpectedErrorMessage;
@@ -39,6 +40,9 @@ class ComponentEndpointTests {
 
     @MockBean
     private ItemService<Component> componentService;
+
+    @MockBean
+    private ProductComponentsService productComponentsService;
 
     @Test
     void getComponent_shouldReturnComponentDto() throws Exception {
@@ -94,6 +98,19 @@ class ComponentEndpointTests {
                 .andDo(print());
 
         verify(componentService).deleteItem(VALID_COMPONENT_ID);
+    }
+
+    @Test
+    void deleteComponent_whenComponentInUse_shouldReturn409() throws Exception {
+        var componentId = 311;
+        when(productComponentsService.isComponentInUse(componentId)).thenReturn(true);
+
+        var endpoint = Endpoint.COMPONENT.getEndpoint(componentId);
+        this.mockMvc
+                .perform(delete(endpoint))
+                .andDo(print())
+                .andExpect(status().isConflict())
+                .andExpect(content().string(ExpectedErrorMessage.componentIsInUse(componentId)));
     }
 
     @Test
