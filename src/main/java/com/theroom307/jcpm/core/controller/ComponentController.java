@@ -122,7 +122,10 @@ public class ComponentController extends BaseItemController<Component> {
             @ApiResponse(responseCode = "200",
                     description = "The component has been deleted or doesn't exist",
                     content = @Content),
-            @ApiResponse(responseCode = "400", description = "Invalid component ID", content = @Content)
+            @ApiResponse(responseCode = "400", description = "Invalid component ID", content = @Content),
+            @ApiResponse(responseCode = "409",
+                    description = "The component is used in some product(s) and cannot be deleted",
+                    content = @Content)
     })
     @DeleteMapping("/{componentId}")
     public void
