@@ -28,12 +28,12 @@ public class ExpectedErrorMessage {
 
     public static String productDoesNotContainComponent(long productId, long componentId) {
         return String.format("%s '%s' does not contain %s '%s'", Item.PRODUCT, productId,
-                Item.COMPONENT.toString().toLowerCase(), componentId);
+                Item.COMPONENT.toLowerCase(), componentId);
     }
 
     public static String productAlreadyContainsComponent(long productId, long componentId) {
         return String.format("%s '%s' already contains %s '%s'", Item.PRODUCT, productId,
-                Item.COMPONENT.toString().toLowerCase(), componentId);
+                Item.COMPONENT.toLowerCase(), componentId);
     }
 
     public static String invalidEditProductComponentRequest() {
@@ -58,5 +58,10 @@ public class ExpectedErrorMessage {
 
     public static String parameterMustBeNumber(String parameter) {
         return String.format("'%s' must be a number", parameter);
+    }
+
+    public static String componentIsInUse(int componentId) {
+        return String.format("%s '%s' is used in some %s(s)",
+                Item.COMPONENT, componentId, Item.PRODUCT.toLowerCase());
     }
 }

@@ -26,6 +26,7 @@ import java.util.Optional;
 import static com.theroom307.jcpm.core.utils.TestComponentData.VALID_COMPONENT_ID;
 import static com.theroom307.jcpm.core.utils.TestData.DEFAULT_COMPONENT_QUANTITY;
 import static com.theroom307.jcpm.core.utils.TestProductData.VALID_PRODUCT_ID;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.verify;
@@ -200,6 +201,32 @@ class ProductComponentServiceTests {
         assertThatThrownBy(() -> callRemoveComponentMethod(productId, componentId))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(ExpectedErrorMessage.productDoesNotContainComponent(productId, componentId));
+    }
+
+    /*
+        GET PRODUCTS BY COMPONENT
+     */
+
+    @Test
+    void isComponentInUse_whenComponentUsedInOneProduct_shouldReturnTrue() {
+        var componentId = 419L;
+        when(productComponentRepository.countComponentUsage(componentId))
+                .thenReturn(1L);
+
+        assertThat(service.isComponentInUse(componentId))
+                .as("Should return true because the component is used one time")
+                .isTrue();
+    }
+
+    @Test
+    void isComponentInUse_whenComponentNotUsedInProducts_shouldReturnFalse() {
+        var componentId = 419L;
+        when(productComponentRepository.countComponentUsage(componentId))
+                .thenReturn(0L);
+
+        assertThat(service.isComponentInUse(componentId))
+                .as("Should return false because the component is used zero times")
+                .isFalse();
     }
 
     /*

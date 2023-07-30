@@ -1,5 +1,6 @@
 package com.theroom307.jcpm.core.controller;
 
+import com.theroom307.jcpm.core.controller.exception.ConditionFailedException;
 import com.theroom307.jcpm.core.data.dto.ComponentRequestDto;
 import com.theroom307.jcpm.core.data.dto.ComponentResponseDto;
 import com.theroom307.jcpm.core.data.dto.IResponseDto;
@@ -7,6 +8,7 @@ import com.theroom307.jcpm.core.data.dto.wrapper.ListResponseWrapper;
 import com.theroom307.jcpm.core.data.model.Component;
 import com.theroom307.jcpm.core.service.ItemDtoMapper;
 import com.theroom307.jcpm.core.service.ItemService;
+import com.theroom307.jcpm.core.service.ProductComponentsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -26,9 +28,13 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Component API")
 public class ComponentController extends BaseItemController<Component> {
 
+    private final ProductComponentsService productComponentsService;
+
     protected ComponentController(@Autowired ItemService<Component> service,
-                                  @Autowired ItemDtoMapper mapper) {
+                                  @Autowired ItemDtoMapper mapper,
+                                  @Autowired ProductComponentsService productComponentsService) {
         super(service, mapper);
+        this.productComponentsService = productComponentsService;
     }
 
     @Operation(summary = "Get the list of all components (paginated)")
@@ -124,7 +130,17 @@ public class ComponentController extends BaseItemController<Component> {
             @PathVariable
             long componentId
     ) {
+        if (productComponentsService.isComponentInUse(componentId)) {
+            throwComponentIsInUseException(componentId);
+        }
         service.deleteItem(componentId);
+    }
+
+    private void throwComponentIsInUseException(long componentId) {
+        throw new ConditionFailedException(String.format(
+                "Component '%s' is used in some product(s)",
+                componentId
+        ));
     }
 
     // for Open API Documentation

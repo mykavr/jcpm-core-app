@@ -11,4 +11,6 @@ public interface ProductComponentsService {
      */
     void editComponent(long productId, long componentId, int quantity, boolean add, boolean remove);
 
+    boolean isComponentInUse(long componentId);
+
 }
