@@ -1,4 +1,4 @@
-package com.theroom307.jcpm.core.utils;
+package com.theroom307.jcpm.core.utils.constant;
 
 public class ExpectedErrorMessage {
 

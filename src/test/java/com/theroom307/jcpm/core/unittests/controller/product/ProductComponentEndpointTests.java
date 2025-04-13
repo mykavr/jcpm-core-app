@@ -1,4 +1,4 @@
-package com.theroom307.jcpm.core.unittests.controller;
+package com.theroom307.jcpm.core.unittests.controller.product;
 
 import com.theroom307.jcpm.core.controller.ProductController;
 import com.theroom307.jcpm.core.controller.exception.BadRequestException;
@@ -8,9 +8,10 @@ import com.theroom307.jcpm.core.controller.exception.NotFoundException;
 import com.theroom307.jcpm.core.service.ItemDtoMapper;
 import com.theroom307.jcpm.core.service.ItemService;
 import com.theroom307.jcpm.core.service.ProductComponentsService;
-import com.theroom307.jcpm.core.utils.Endpoint;
-import com.theroom307.jcpm.core.utils.ExpectedErrorMessage;
-import com.theroom307.jcpm.core.utils.Item;
+import com.theroom307.jcpm.core.utils.constant.Endpoint;
+import com.theroom307.jcpm.core.utils.constant.ExpectedErrorMessage;
+import com.theroom307.jcpm.core.utils.constant.Item;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -21,22 +22,18 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-import static com.theroom307.jcpm.core.utils.TestComponentData.VALID_COMPONENT_ID;
-import static com.theroom307.jcpm.core.utils.TestData.DEFAULT_COMPONENT_QUANTITY;
-import static com.theroom307.jcpm.core.utils.TestData.getAddComponentToProductRequestBody;
-import static com.theroom307.jcpm.core.utils.TestData.getRemoveComponentFromProductRequestBody;
-import static com.theroom307.jcpm.core.utils.TestProductData.VALID_PRODUCT_ID;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static com.theroom307.jcpm.core.TestTypes.UNIT_TEST;
+import static com.theroom307.jcpm.core.utils.data.TestComponentData.VALID_COMPONENT_ID;
+import static com.theroom307.jcpm.core.utils.data.TestData.*;
+import static com.theroom307.jcpm.core.utils.data.TestProductData.VALID_PRODUCT_ID;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@Tag(UNIT_TEST)
 @WebMvcTest(ProductController.class)
 @MockBean(ItemService.class)
 @MockBean(ItemDtoMapper.class)

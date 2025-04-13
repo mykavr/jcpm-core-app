@@ -36,6 +36,31 @@ dependencies {
 	testAnnotationProcessor("org.projectlombok:lombok:$lombokVersion")
 }
 
-tasks.test {
-	useJUnitPlatform()
+tasks {
+	register<Test>("unitTest") {
+		description = "Runs unit tests"
+		group = "verification"
+
+		useJUnitPlatform {
+			includeTags("unit") // matches TestTypes.UNIT_TEST
+		}
+	}
+
+	register<Test>("integrationTest") {
+		description = "Runs integration tests"
+		group = "verification"
+
+		useJUnitPlatform {
+			includeTags("integration") // matches TestTypes.INTEGRATION_TEST
+		}
+	}
+
+	test {
+		description = "Runs all tests"
+		dependsOn(":unitTest", ":integrationTest")
+
+		// Make sure the main test task doesn't run tests directly
+		// It will rely on the specialized tasks instead
+		enabled = false
+	}
 }

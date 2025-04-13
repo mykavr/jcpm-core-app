@@ -2,8 +2,9 @@ package com.theroom307.jcpm.core.integrationtests;
 
 import com.theroom307.jcpm.core.data.model.Product;
 import com.theroom307.jcpm.core.data.repository.ProductRepository;
-import com.theroom307.jcpm.core.utils.Endpoint;
+import com.theroom307.jcpm.core.utils.constant.Endpoint;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -15,7 +16,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
 
-import static com.theroom307.jcpm.core.utils.TestProductData.getProductToCreate;
+import static com.theroom307.jcpm.core.TestTypes.INTEGRATION_TEST;
+import static com.theroom307.jcpm.core.utils.data.TestProductData.getProductToCreate;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -23,6 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@Tag(INTEGRATION_TEST)
 @SpringBootTest
 @AutoConfigureMockMvc
 class ProductsPaginationTests {

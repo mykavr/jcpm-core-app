@@ -1,4 +1,4 @@
-package com.theroom307.jcpm.core.unittests.controller;
+package com.theroom307.jcpm.core.unittests.controller.product;
 
 import com.theroom307.jcpm.core.controller.ProductController;
 import com.theroom307.jcpm.core.controller.exception.BadRequestException;
@@ -7,10 +7,11 @@ import com.theroom307.jcpm.core.data.model.Product;
 import com.theroom307.jcpm.core.service.ItemService;
 import com.theroom307.jcpm.core.service.ProductComponentsService;
 import com.theroom307.jcpm.core.service.impl.ItemDtoMapperImpl;
-import com.theroom307.jcpm.core.utils.Endpoint;
-import com.theroom307.jcpm.core.utils.ExpectedErrorMessage;
-import com.theroom307.jcpm.core.utils.Item;
+import com.theroom307.jcpm.core.utils.constant.Endpoint;
+import com.theroom307.jcpm.core.utils.constant.ExpectedErrorMessage;
+import com.theroom307.jcpm.core.utils.constant.Item;
 import lombok.SneakyThrows;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -21,7 +22,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static com.theroom307.jcpm.core.utils.TestProductData.*;
+import static com.theroom307.jcpm.core.TestTypes.UNIT_TEST;
+import static com.theroom307.jcpm.core.utils.data.TestProductData.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
@@ -29,6 +31,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@Tag(UNIT_TEST)
 @WebMvcTest(ProductController.class)
 @MockBean(ProductComponentsService.class)
 @Import(ItemDtoMapperImpl.class)

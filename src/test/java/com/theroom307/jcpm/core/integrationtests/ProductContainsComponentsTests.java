@@ -6,12 +6,13 @@ import com.theroom307.jcpm.core.data.model.ProductComponent;
 import com.theroom307.jcpm.core.data.repository.ComponentRepository;
 import com.theroom307.jcpm.core.data.repository.ProductComponentRepository;
 import com.theroom307.jcpm.core.data.repository.ProductRepository;
-import com.theroom307.jcpm.core.utils.Endpoint;
-import com.theroom307.jcpm.core.utils.TestComponentData;
-import com.theroom307.jcpm.core.utils.TestData;
-import com.theroom307.jcpm.core.utils.TestProductData;
+import com.theroom307.jcpm.core.utils.constant.Endpoint;
+import com.theroom307.jcpm.core.utils.data.TestComponentData;
+import com.theroom307.jcpm.core.utils.data.TestData;
+import com.theroom307.jcpm.core.utils.data.TestProductData;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -19,11 +20,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static com.theroom307.jcpm.core.TestTypes.INTEGRATION_TEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@Tag(INTEGRATION_TEST)
 @SpringBootTest
 @AutoConfigureMockMvc
 class ProductContainsComponentsTests {

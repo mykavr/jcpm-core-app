@@ -1,4 +1,4 @@
-package com.theroom307.jcpm.core.utils;
+package com.theroom307.jcpm.core.utils.helper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

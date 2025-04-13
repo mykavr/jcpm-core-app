@@ -1,4 +1,4 @@
-package com.theroom307.jcpm.core.unittests.controller;
+package com.theroom307.jcpm.core.unittests.controller.exception;
 
 import com.theroom307.jcpm.core.controller.ComponentController;
 import com.theroom307.jcpm.core.controller.exception.ItemNotFoundException;
@@ -6,9 +6,10 @@ import com.theroom307.jcpm.core.data.model.Component;
 import com.theroom307.jcpm.core.service.ItemDtoMapper;
 import com.theroom307.jcpm.core.service.ItemService;
 import com.theroom307.jcpm.core.service.ProductComponentsService;
-import com.theroom307.jcpm.core.utils.Endpoint;
-import com.theroom307.jcpm.core.utils.ExpectedErrorMessage;
-import com.theroom307.jcpm.core.utils.Item;
+import com.theroom307.jcpm.core.utils.constant.Endpoint;
+import com.theroom307.jcpm.core.utils.constant.ExpectedErrorMessage;
+import com.theroom307.jcpm.core.utils.constant.Item;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -19,6 +20,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static com.theroom307.jcpm.core.TestTypes.UNIT_TEST;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.verify;
@@ -29,6 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@Tag(UNIT_TEST)
 @WebMvcTest(ComponentController.class)
 @MockBean(ItemDtoMapper.class)
 @MockBean(ProductComponentsService.class)
