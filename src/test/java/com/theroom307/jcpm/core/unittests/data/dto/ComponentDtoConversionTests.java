@@ -1,14 +1,17 @@
 package com.theroom307.jcpm.core.unittests.data.dto;
 
 import com.theroom307.jcpm.core.data.dto.ComponentResponseDto;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
 import static com.theroom307.jcpm.core.utils.TestComponentData.*;
+import static com.theroom307.jcpm.core.utils.TestTypes.UNIT_TEST;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Tag(UNIT_TEST)
 class ComponentDtoConversionTests {
 
     @Test

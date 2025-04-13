@@ -39,3 +39,23 @@ dependencies {
 tasks.test {
 	useJUnitPlatform()
 }
+
+tasks {
+	register<Test>("unitTest") {
+		description = "Runs unit tests"
+		group = "verification"
+
+		useJUnitPlatform {
+			includeTags("unit") // matches TestTypes.UNIT_TEST
+		}
+	}
+
+	register<Test>("integrationTest") {
+		description = "Runs integration tests"
+		group = "verification"
+
+		useJUnitPlatform {
+			includeTags("integration") // matches TestTypes.INTEGRATION_TEST
+		}
+	}
+}

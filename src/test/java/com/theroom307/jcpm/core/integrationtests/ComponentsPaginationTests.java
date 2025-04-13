@@ -4,6 +4,7 @@ import com.theroom307.jcpm.core.data.model.Component;
 import com.theroom307.jcpm.core.data.repository.ComponentRepository;
 import com.theroom307.jcpm.core.utils.Endpoint;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 import static com.theroom307.jcpm.core.utils.TestComponentData.getComponentToCreate;
+import static com.theroom307.jcpm.core.utils.TestTypes.INTEGRATION_TEST;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -23,6 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@Tag(INTEGRATION_TEST)
 @SpringBootTest
 @AutoConfigureMockMvc
 class ComponentsPaginationTests {

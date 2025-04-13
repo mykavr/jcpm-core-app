@@ -6,6 +6,7 @@ import com.theroom307.jcpm.core.data.model.Product;
 import com.theroom307.jcpm.core.data.repository.ProductRepository;
 import com.theroom307.jcpm.core.service.impl.ProductServiceImpl;
 import com.theroom307.jcpm.core.utils.ExpectedErrorMessage;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -21,12 +22,14 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.theroom307.jcpm.core.utils.TestProductData.*;
+import static com.theroom307.jcpm.core.utils.TestTypes.UNIT_TEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@Tag(UNIT_TEST)
 @ExtendWith(MockitoExtension.class)
 class ProductServiceTests {
 

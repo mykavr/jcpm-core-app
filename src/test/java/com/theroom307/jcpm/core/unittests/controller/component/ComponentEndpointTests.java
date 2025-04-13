@@ -11,6 +11,7 @@ import com.theroom307.jcpm.core.utils.Endpoint;
 import com.theroom307.jcpm.core.utils.ExpectedErrorMessage;
 import com.theroom307.jcpm.core.utils.Item;
 import lombok.SneakyThrows;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -22,6 +23,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static com.theroom307.jcpm.core.utils.TestComponentData.*;
+import static com.theroom307.jcpm.core.utils.TestTypes.UNIT_TEST;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
@@ -29,6 +31,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@Tag(UNIT_TEST)
 @WebMvcTest(ComponentController.class)
 @Import(ItemDtoMapperImpl.class)
 class ComponentEndpointTests {

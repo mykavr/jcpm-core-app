@@ -16,6 +16,7 @@ import com.theroom307.jcpm.core.utils.Item;
 import com.theroom307.jcpm.core.utils.TestComponentData;
 import com.theroom307.jcpm.core.utils.TestProductData;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -26,12 +27,14 @@ import java.util.Optional;
 import static com.theroom307.jcpm.core.utils.TestComponentData.VALID_COMPONENT_ID;
 import static com.theroom307.jcpm.core.utils.TestData.DEFAULT_COMPONENT_QUANTITY;
 import static com.theroom307.jcpm.core.utils.TestProductData.VALID_PRODUCT_ID;
+import static com.theroom307.jcpm.core.utils.TestTypes.UNIT_TEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@Tag(UNIT_TEST)
 @ExtendWith(MockitoExtension.class)
 class ProductComponentServiceTests {
 

@@ -9,6 +9,7 @@ import com.theroom307.jcpm.core.service.ItemDtoMapper;
 import com.theroom307.jcpm.core.service.impl.ItemDtoMapperImpl;
 import com.theroom307.jcpm.core.utils.TestComponentData;
 import com.theroom307.jcpm.core.utils.TestProductData;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -16,8 +17,10 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
+import static com.theroom307.jcpm.core.utils.TestTypes.UNIT_TEST;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Tag(UNIT_TEST)
 class ItemDtoMapperTests {
 
     private final ItemDtoMapper mapper = new ItemDtoMapperImpl();

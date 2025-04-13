@@ -11,6 +11,7 @@ import com.theroom307.jcpm.core.service.ProductComponentsService;
 import com.theroom307.jcpm.core.utils.Endpoint;
 import com.theroom307.jcpm.core.utils.ExpectedErrorMessage;
 import com.theroom307.jcpm.core.utils.Item;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -24,6 +25,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import static com.theroom307.jcpm.core.utils.TestComponentData.VALID_COMPONENT_ID;
 import static com.theroom307.jcpm.core.utils.TestData.*;
 import static com.theroom307.jcpm.core.utils.TestProductData.VALID_PRODUCT_ID;
+import static com.theroom307.jcpm.core.utils.TestTypes.UNIT_TEST;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
@@ -31,6 +33,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@Tag(UNIT_TEST)
 @WebMvcTest(ProductController.class)
 @MockBean(ItemService.class)
 @MockBean(ItemDtoMapper.class)
