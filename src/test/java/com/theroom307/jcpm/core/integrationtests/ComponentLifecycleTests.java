@@ -139,7 +139,7 @@ class ComponentLifecycleTests {
 
     @Test
     void getComponentsList() throws Exception {
-        var component = componentRepository.save(getComponent());
+        var component = componentRepository.save(getComponentToCreate());
 
         var expectedSingleComponentResponse = getResponseForComponent(component);
         var expectedComponentsList = getComponentListResponseAsString(expectedSingleComponentResponse);
@@ -152,7 +152,7 @@ class ComponentLifecycleTests {
 
     @Test
     void deleteComponent() throws Exception {
-        var component = componentRepository.save(getComponent());
+        var component = componentRepository.save(getComponentToCreate());
 
         mockMvc.perform(delete(String.format(COMPONENT_ENDPOINT, component.getId())))
                 .andDo(print())
