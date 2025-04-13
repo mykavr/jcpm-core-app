@@ -1,4 +1,4 @@
-package com.theroom307.jcpm.core.unittests.controller;
+package com.theroom307.jcpm.core.unittests.controller.product;
 
 import com.theroom307.jcpm.core.controller.ProductController;
 import com.theroom307.jcpm.core.controller.exception.BadRequestException;
@@ -22,20 +22,14 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import static com.theroom307.jcpm.core.utils.TestComponentData.VALID_COMPONENT_ID;
-import static com.theroom307.jcpm.core.utils.TestData.DEFAULT_COMPONENT_QUANTITY;
-import static com.theroom307.jcpm.core.utils.TestData.getAddComponentToProductRequestBody;
-import static com.theroom307.jcpm.core.utils.TestData.getRemoveComponentFromProductRequestBody;
+import static com.theroom307.jcpm.core.utils.TestData.*;
 import static com.theroom307.jcpm.core.utils.TestProductData.VALID_PRODUCT_ID;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ProductController.class)
 @MockBean(ItemService.class)

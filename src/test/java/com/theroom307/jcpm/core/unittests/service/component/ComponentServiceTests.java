@@ -1,4 +1,4 @@
-package com.theroom307.jcpm.core.unittests.service;
+package com.theroom307.jcpm.core.unittests.service.component;
 
 import com.theroom307.jcpm.core.controller.exception.BadRequestException;
 import com.theroom307.jcpm.core.controller.exception.ItemNotFoundException;
@@ -20,9 +20,7 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.Optional;
 
-import static com.theroom307.jcpm.core.utils.TestComponentData.VALID_COMPONENT_ID;
-import static com.theroom307.jcpm.core.utils.TestComponentData.getComponent;
-import static com.theroom307.jcpm.core.utils.TestComponentData.getComponentToCreate;
+import static com.theroom307.jcpm.core.utils.TestComponentData.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyLong;

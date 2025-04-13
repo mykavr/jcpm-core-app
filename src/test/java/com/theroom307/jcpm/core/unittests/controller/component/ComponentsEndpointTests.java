@@ -1,7 +1,7 @@
-package com.theroom307.jcpm.core.unittests.controller;
+package com.theroom307.jcpm.core.unittests.controller.component;
 
-import com.theroom307.jcpm.core.controller.ProductController;
-import com.theroom307.jcpm.core.data.model.Product;
+import com.theroom307.jcpm.core.controller.ComponentController;
+import com.theroom307.jcpm.core.data.model.Component;
 import com.theroom307.jcpm.core.service.ItemService;
 import com.theroom307.jcpm.core.service.ProductComponentsService;
 import com.theroom307.jcpm.core.service.impl.ItemDtoMapperImpl;
@@ -19,7 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
-import static com.theroom307.jcpm.core.utils.TestProductData.*;
+import static com.theroom307.jcpm.core.utils.TestComponentData.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -27,78 +27,78 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(ProductController.class)
+@WebMvcTest(ComponentController.class)
 @Import(ItemDtoMapperImpl.class)
 @MockBean(ProductComponentsService.class)
-class ProductsEndpointTests {
+class ComponentsEndpointTests {
 
-    private final static String ENDPOINT = Endpoint.PRODUCTS.getEndpoint();
+    private final static String ENDPOINT = Endpoint.COMPONENTS.getEndpoint();
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockBean
-    private ItemService<Product> productService;
+    private ItemService<Component> componentService;
 
     @Test
-    void getProducts_whenNoProductsExist_shouldReturnEmptyProductListWrapper() throws Exception {
-        Page<Product> emptyPage = Page.empty(PageRequest.of(0, 10));
+    void getComponents_whenNoComponentsExist_shouldReturnEmptyComponentListWrapper() throws Exception {
+        Page<Component> emptyPage = Page.empty(PageRequest.of(0, 10));
 
-        when(productService.getItems(anyInt(), anyInt())).thenReturn(emptyPage);
+        when(componentService.getItems(anyInt(), anyInt())).thenReturn(emptyPage);
 
         this.mockMvc
                 .perform(get(ENDPOINT))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(content().json(getEmptyProductListAsString()));
+                .andExpect(content().json(getEmptyComponentListAsString()));
     }
 
     @Test
-    void getProducts_whenOneProductExists_shouldReturnProductListWrapperWithOneProduct() throws Exception {
-        var products = new PageImpl<>(List.of(getProduct()), PageRequest.of(0, 10), 1);
-        when(productService.getItems(anyInt(), anyInt())).thenReturn(products);
+    void getComponents_whenOneComponentExists_shouldReturnComponentListWrapperWithOneComponent() throws Exception {
+        var components = new PageImpl<>(List.of(getComponent()), PageRequest.of(0, 10), 1);
+        when(componentService.getItems(anyInt(), anyInt())).thenReturn(components);
 
         this.mockMvc
                 .perform(get(ENDPOINT))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(content().json(getProductListResponseAsString()));
+                .andExpect(content().json(getComponentListResponseAsString()));
     }
 
     @Test
-    void getProducts_shouldRequestFromProductService() throws Exception {
+    void getComponents_shouldRequestFromComponentService() throws Exception {
         this.mockMvc
                 .perform(get(ENDPOINT));
-        verify(productService).getItems(anyInt(), anyInt());
+        verify(componentService).getItems(anyInt(), anyInt());
     }
 
     @Test
-    void postProduct_shouldSaveProduct() throws Exception {
-        when(productService.createItem((any(Product.class))))
+    void postComponent_shouldSaveComponent() throws Exception {
+        when(componentService.createItem((any(Component.class))))
                 .thenReturn(1L);
 
         this.mockMvc
                 .perform(post(ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(getProductDtoToCreateProduct()));
+                        .content(getComponentDtoToCreateComponent()));
 
-        verify(productService).createItem(getProductToCreate());
+        verify(componentService).createItem(getComponentToCreate());
     }
 
     @Test
-    void postProduct_shouldReturnProductId() throws Exception {
-        var savedProductId = 1L;
-        var savedProductIdAsString = String.valueOf(savedProductId);
+    void postComponent_shouldReturnComponentId() throws Exception {
+        var savedComponentId = 1L;
+        var savedComponentIdAsString = String.valueOf(savedComponentId);
 
-        when(productService.createItem(any(Product.class)))
-                .thenReturn(savedProductId);
+        when(componentService.createItem(any(Component.class)))
+                .thenReturn(savedComponentId);
 
         this.mockMvc
                 .perform(post(ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(getProductDtoToCreateProduct()))
+                        .content(getComponentDtoToCreateComponent()))
                 .andDo(print())
                 .andExpect(status().isCreated())
-                .andExpect(content().string(savedProductIdAsString));
+                .andExpect(content().string(savedComponentIdAsString));
     }
 }

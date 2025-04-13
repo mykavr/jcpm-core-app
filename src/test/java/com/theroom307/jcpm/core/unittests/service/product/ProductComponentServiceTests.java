@@ -1,4 +1,4 @@
-package com.theroom307.jcpm.core.unittests.service;
+package com.theroom307.jcpm.core.unittests.service.product;
 
 import com.theroom307.jcpm.core.controller.exception.BadRequestException;
 import com.theroom307.jcpm.core.controller.exception.ConditionFailedException;

@@ -1,4 +1,4 @@
-package com.theroom307.jcpm.core.unittests.data;
+package com.theroom307.jcpm.core.unittests.data.dto;
 
 import com.theroom307.jcpm.core.data.dto.ComponentResponseDto;
 import org.junit.jupiter.api.Test;

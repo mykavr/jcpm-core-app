@@ -1,4 +1,4 @@
-package com.theroom307.jcpm.core.unittests.controller;
+package com.theroom307.jcpm.core.unittests.controller.component;
 
 import com.theroom307.jcpm.core.controller.ComponentController;
 import com.theroom307.jcpm.core.controller.exception.BadRequestException;

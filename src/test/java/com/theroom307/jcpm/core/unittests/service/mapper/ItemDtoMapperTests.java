@@ -1,4 +1,4 @@
-package com.theroom307.jcpm.core.unittests.data;
+package com.theroom307.jcpm.core.unittests.service.mapper;
 
 import com.theroom307.jcpm.core.data.dto.IResponseDto;
 import com.theroom307.jcpm.core.data.dto.wrapper.ListResponseWrapper;

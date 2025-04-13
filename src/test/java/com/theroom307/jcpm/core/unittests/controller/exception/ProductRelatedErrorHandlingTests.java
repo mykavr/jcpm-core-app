@@ -1,8 +1,8 @@
-package com.theroom307.jcpm.core.unittests.controller;
+package com.theroom307.jcpm.core.unittests.controller.exception;
 
-import com.theroom307.jcpm.core.controller.ComponentController;
+import com.theroom307.jcpm.core.controller.ProductController;
 import com.theroom307.jcpm.core.controller.exception.ItemNotFoundException;
-import com.theroom307.jcpm.core.data.model.Component;
+import com.theroom307.jcpm.core.data.model.Product;
 import com.theroom307.jcpm.core.service.ItemDtoMapper;
 import com.theroom307.jcpm.core.service.ItemService;
 import com.theroom307.jcpm.core.service.ProductComponentsService;
@@ -29,22 +29,22 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(ComponentController.class)
-@MockBean(ItemDtoMapper.class)
+@WebMvcTest(ProductController.class)
 @MockBean(ProductComponentsService.class)
-class ComponentRelatedErrorHandlingTests {
+@MockBean(ItemDtoMapper.class)
+class ProductRelatedErrorHandlingTests {
 
-    private final static String ENDPOINT = Endpoint.COMPONENTS.getEndpoint();
+    private final static String ENDPOINT = Endpoint.PRODUCTS.getEndpoint();
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockBean
-    private ItemService<Component> componentService;
+    private ItemService<Product> productService;
 
     @Test
     void shouldReturnGeneralError() throws Exception {
-        when(componentService.getItem(anyLong()))
+        when(productService.getItem(anyLong()))
                 .thenThrow(new RuntimeException());
 
         this.mockMvc
@@ -55,7 +55,7 @@ class ComponentRelatedErrorHandlingTests {
     }
 
     @Test
-    void getComponents_pagination_negativePageSize_shouldReturnBadRequest() throws Exception {
+    void getProducts_pagination_negativePageSize_shouldReturnBadRequest() throws Exception {
         this.mockMvc
                 .perform(get(ENDPOINT).queryParam("size", "-1"))
                 .andDo(print())
@@ -64,7 +64,7 @@ class ComponentRelatedErrorHandlingTests {
     }
 
     @Test
-    void getComponents_pagination_zeroPageSize_shouldReturnBadRequest() throws Exception {
+    void getProducts_pagination_zeroPageSize_shouldReturnBadRequest() throws Exception {
         this.mockMvc
                 .perform(get(ENDPOINT).queryParam("size", "0"))
                 .andDo(print())
@@ -73,7 +73,7 @@ class ComponentRelatedErrorHandlingTests {
     }
 
     @Test
-    void getComponents_pagination_negativePageNumber_shouldReturnBadRequest() throws Exception {
+    void getProducts_pagination_negativePageNumber_shouldReturnBadRequest() throws Exception {
         this.mockMvc
                 .perform(get(ENDPOINT).queryParam("page", "-1"))
                 .andDo(print())
@@ -82,7 +82,7 @@ class ComponentRelatedErrorHandlingTests {
     }
 
     @Test
-    void getComponents_pagination_negativePageNumber_zeroPageSize_shouldReturnBadRequest() throws Exception {
+    void getProducts_pagination_negativePageNumber_zeroPageSize_shouldReturnBadRequest() throws Exception {
         this.mockMvc
                 .perform(get(ENDPOINT)
                         .queryParam("page", "-1")
@@ -95,7 +95,7 @@ class ComponentRelatedErrorHandlingTests {
 
     @ParameterizedTest
     @ValueSource(strings = {"page", "size"})
-    void getComponents_pagination_stringAsValue_shouldReturnBadRequest(String parameter) throws Exception {
+    void getProducts_pagination_stringAsValue_shouldReturnBadRequest(String parameter) throws Exception {
         this.mockMvc
                 .perform(get(ENDPOINT).queryParam(parameter, "a"))
                 .andDo(print())
@@ -104,27 +104,27 @@ class ComponentRelatedErrorHandlingTests {
     }
 
     @Test
-    void shouldRespond404WhenComponentDoesNotExist() throws Exception {
-        when(componentService.getItem(anyLong()))
-                .thenThrow(new ItemNotFoundException(Item.COMPONENT.toString(), 1));
+    void shouldRespond404WhenProductDoesNotExist() throws Exception {
+        when(productService.getItem(anyLong()))
+                .thenThrow(new ItemNotFoundException(Item.PRODUCT.toString(), 1));
 
         this.mockMvc
                 .perform(get(ENDPOINT + "/1"))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(content().string(ExpectedErrorMessage.componentNotFound(1)));
+                .andExpect(content().string(ExpectedErrorMessage.productNotFound(1)));
 
-        verify(componentService).getItem(1L);
+        verify(productService).getItem(1L);
     }
 
     @ParameterizedTest
     @CsvSource({
-            "a , 'componentId' must be a number",
-            "-1 , Component ID must be greater than zero"
+            "a , 'productId' must be a number",
+            "-1 , Product ID must be greater than zero"
     })
-    void getComponent_invalidId_shouldReturnBadRequest(String componentId, String expectedMessage) throws Exception {
+    void getProduct_invalidId_shouldReturnBadRequest(String productId, String expectedMessage) throws Exception {
         this.mockMvc
-                .perform(get(ENDPOINT + "/" + componentId))
+                .perform(get(ENDPOINT + "/" + productId))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string(expectedMessage));
@@ -136,13 +136,13 @@ class ComponentRelatedErrorHandlingTests {
             "{\"name\": \"  \", \"description\": \"Valid description.\"}",
             "{\"description\": \"Valid description.\"}"
     })
-    void createComponent_missingName_shouldReturnBadRequest(String createComponentJson) throws Exception {
+    void createProduct_missingName_shouldReturnBadRequest(String createProductJson) throws Exception {
         this.mockMvc
                 .perform(post(ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(createComponentJson))
+                        .content(createProductJson))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(ExpectedErrorMessage.componentNameIsRequired()));
+                .andExpect(content().string(ExpectedErrorMessage.productNameIsRequired()));
     }
 }
