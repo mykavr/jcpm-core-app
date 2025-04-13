@@ -7,8 +7,8 @@ import com.theroom307.jcpm.core.data.model.Component;
 import com.theroom307.jcpm.core.data.model.Product;
 import com.theroom307.jcpm.core.service.ItemDtoMapper;
 import com.theroom307.jcpm.core.service.impl.ItemDtoMapperImpl;
-import com.theroom307.jcpm.core.utils.TestComponentData;
-import com.theroom307.jcpm.core.utils.TestProductData;
+import com.theroom307.jcpm.core.utils.data.TestComponentData;
+import com.theroom307.jcpm.core.utils.data.TestProductData;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Page;
@@ -17,7 +17,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
-import static com.theroom307.jcpm.core.utils.TestTypes.UNIT_TEST;
+import static com.theroom307.jcpm.core.TestTypes.UNIT_TEST;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Tag(UNIT_TEST)

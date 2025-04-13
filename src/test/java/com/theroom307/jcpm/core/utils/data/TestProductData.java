@@ -1,8 +1,9 @@
-package com.theroom307.jcpm.core.utils;
+package com.theroom307.jcpm.core.utils.data;
 
 import com.theroom307.jcpm.core.data.dto.ProductRequestDto;
 import com.theroom307.jcpm.core.data.dto.ProductResponseDto;
 import com.theroom307.jcpm.core.data.model.Product;
+import com.theroom307.jcpm.core.utils.helper.ConversionHelper;
 import lombok.experimental.UtilityClass;
 
 import java.time.ZonedDateTime;

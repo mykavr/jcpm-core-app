@@ -7,8 +7,8 @@ import org.junit.jupiter.api.Test;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
-import static com.theroom307.jcpm.core.utils.TestProductData.*;
-import static com.theroom307.jcpm.core.utils.TestTypes.UNIT_TEST;
+import static com.theroom307.jcpm.core.TestTypes.UNIT_TEST;
+import static com.theroom307.jcpm.core.utils.data.TestProductData.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Tag(UNIT_TEST)

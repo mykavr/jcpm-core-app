@@ -1,6 +1,6 @@
-package com.theroom307.jcpm.core.utils;
+package com.theroom307.jcpm.core.utils.data;
 
-import static com.theroom307.jcpm.core.utils.TestComponentData.VALID_COMPONENT_ID;
+import static com.theroom307.jcpm.core.utils.data.TestComponentData.VALID_COMPONENT_ID;
 
 public class TestData {
 

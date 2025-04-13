@@ -2,7 +2,7 @@ package com.theroom307.jcpm.core.integrationtests;
 
 import com.theroom307.jcpm.core.data.model.Component;
 import com.theroom307.jcpm.core.data.repository.ComponentRepository;
-import com.theroom307.jcpm.core.utils.Endpoint;
+import com.theroom307.jcpm.core.utils.constant.Endpoint;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -15,8 +15,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.time.ZonedDateTime;
 import java.util.function.Predicate;
 
-import static com.theroom307.jcpm.core.utils.TestComponentData.*;
-import static com.theroom307.jcpm.core.utils.TestTypes.INTEGRATION_TEST;
+import static com.theroom307.jcpm.core.TestTypes.INTEGRATION_TEST;
+import static com.theroom307.jcpm.core.utils.data.TestComponentData.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
