@@ -1,7 +1,7 @@
 plugins {
 	java
-	id("org.springframework.boot") version "3.1.4"
-	id("io.spring.dependency-management") version "1.1.0"
+	id("org.springframework.boot") version "3.4.4"
+	id("io.spring.dependency-management") version "1.1.7"
 }
 
 group = "com.theroom307.jcpm"
@@ -11,7 +11,7 @@ java {
 }
 
 // Define versions for libraries not managed by Spring Boot
-val springdocVersion = "2.1.0"
+val springdocVersion = "2.8.6"
 val lombokVersion = "1.18.38"
 
 repositories {
@@ -29,7 +29,7 @@ dependencies {
 	// Dependency with explicit version management via defined property
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springdocVersion")
 
-	// Lombok dependencies with centralized versioning
+	// Lombok dependencies
 	compileOnly("org.projectlombok:lombok:$lombokVersion")
 	annotationProcessor("org.projectlombok:lombok:$lombokVersion")
 	testCompileOnly("org.projectlombok:lombok:$lombokVersion")

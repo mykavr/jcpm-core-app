@@ -139,7 +139,7 @@ class ProductLifecycleTests {
 
     @Test
     void getProductsList() throws Exception {
-        var product = productRepository.save(getProduct());
+        var product = productRepository.save(getProductToCreate());
 
         var expectedSingleProductResponse = getResponseForProduct(product);
         var expectedProductsList = getProductListResponseAsString(expectedSingleProductResponse);
@@ -152,7 +152,7 @@ class ProductLifecycleTests {
 
     @Test
     void deleteProduct() throws Exception {
-        var product = productRepository.save(getProduct());
+        var product = productRepository.save(getProductToCreate());
 
         mockMvc.perform(delete(String.format(PRODUCT_ENDPOINT, product.getId())))
                 .andDo(print())
