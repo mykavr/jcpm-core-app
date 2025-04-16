@@ -35,8 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @Tag(UNIT_TEST)
 @WebMvcTest(ProductController.class)
-@MockitoBean(types = ItemService.class)
-@MockitoBean(types = ItemDtoMapper.class)
+@MockitoBean(types = {ItemService.class, ItemDtoMapper.class})
 class ProductComponentEndpointTests {
 
     @Autowired
