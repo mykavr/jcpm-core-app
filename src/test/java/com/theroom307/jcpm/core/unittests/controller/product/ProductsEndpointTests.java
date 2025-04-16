@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -32,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Tag(UNIT_TEST)
 @WebMvcTest(ProductController.class)
 @Import(ItemDtoMapperImpl.class)
-@MockBean(ProductComponentsService.class)
+@MockitoBean(types = ProductComponentsService.class)
 class ProductsEndpointTests {
 
     private final static String ENDPOINT = Endpoint.PRODUCTS.getEndpoint();
@@ -40,7 +40,7 @@ class ProductsEndpointTests {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private ItemService<Product> productService;
 
     @Test

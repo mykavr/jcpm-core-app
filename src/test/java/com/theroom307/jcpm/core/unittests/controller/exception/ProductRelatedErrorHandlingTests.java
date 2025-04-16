@@ -16,7 +16,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -33,8 +33,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @Tag(UNIT_TEST)
 @WebMvcTest(ProductController.class)
-@MockBean(ProductComponentsService.class)
-@MockBean(ItemDtoMapper.class)
+@MockitoBean(types = ProductComponentsService.class)
+@MockitoBean(types = ItemDtoMapper.class)
 class ProductRelatedErrorHandlingTests {
 
     private final static String ENDPOINT = Endpoint.PRODUCTS.getEndpoint();
@@ -42,7 +42,7 @@ class ProductRelatedErrorHandlingTests {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private ItemService<Product> productService;
 
     @Test
