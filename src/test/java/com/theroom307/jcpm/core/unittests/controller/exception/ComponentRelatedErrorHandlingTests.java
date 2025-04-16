@@ -33,8 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @Tag(UNIT_TEST)
 @WebMvcTest(ComponentController.class)
-@MockitoBean(types = ItemDtoMapper.class)
-@MockitoBean(types = ProductComponentsService.class)
+@MockitoBean(types = {ItemDtoMapper.class, ProductComponentsService.class})
 class ComponentRelatedErrorHandlingTests {
 
     private final static String ENDPOINT = Endpoint.COMPONENTS.getEndpoint();
