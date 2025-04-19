@@ -1,5 +1,8 @@
 package com.theroom307.jcpm.core.utils.constant;
 
+import lombok.Getter;
+
+@Getter
 public enum Endpoint {
 
     PRODUCTS("/api/v1/product"),
@@ -18,10 +21,6 @@ public enum Endpoint {
 
     Endpoint(String endpoint) {
         this.endpoint = endpoint;
-    }
-
-    public String getEndpoint() {
-        return endpoint;
     }
 
     public String getEndpoint(Object... pathParams) {
