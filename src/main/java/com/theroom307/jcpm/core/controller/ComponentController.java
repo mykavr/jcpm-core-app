@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/component")
 @Validated
 @Tag(name = "Component API")
+@SuppressWarnings("unused")
 public class ComponentController extends BaseItemController<Component> {
 
     private final ProductComponentsService productComponentsService;
@@ -45,8 +46,7 @@ public class ComponentController extends BaseItemController<Component> {
             @ApiResponse(responseCode = "400", description = "Invalid pagination parameters", content = @Content)
     })
     @GetMapping
-    public ListResponseWrapper<ComponentResponseDto>
-    getComponents(
+    public ListResponseWrapper<ComponentResponseDto> getComponents(
             @RequestParam(defaultValue = "0")
             @Schema(type = "integer", defaultValue = "0",
                     description = "Pagination: zero-based page index, must not be negative")
@@ -71,8 +71,7 @@ public class ComponentController extends BaseItemController<Component> {
             @ApiResponse(responseCode = "400", description = "Invalid component ID", content = @Content)
     })
     @GetMapping("/{componentId}")
-    public IResponseDto
-    getComponentById(
+    public IResponseDto getComponentById(
             @PathVariable
             @Min(value = 1, message = "Component ID must be greater than zero")
             long componentId
@@ -87,8 +86,7 @@ public class ComponentController extends BaseItemController<Component> {
             content = @Content(schema = @Schema(type = "integer", description = "Component ID", example = "1")))
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public long
-    createNewComponent(
+    public long createNewComponent(
             @RequestBody
             @Valid
             ComponentRequestDto componentDto
@@ -99,13 +97,12 @@ public class ComponentController extends BaseItemController<Component> {
 
     @Operation(summary = "Edit a component")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Component data sucessfully updated", content = @Content),
+            @ApiResponse(responseCode = "200", description = "Component data successfully updated", content = @Content),
             @ApiResponse(responseCode = "404", description = "Component not found or invalid ID", content = @Content),
             @ApiResponse(responseCode = "400", description = "Invalid component ID or data", content = @Content)
     })
     @PatchMapping("/{componentId}")
-    public void
-    editComponent(
+    public void editComponent(
             @PathVariable
             @Min(value = 1, message = "Component ID must be greater than zero")
             long componentId,
@@ -128,8 +125,7 @@ public class ComponentController extends BaseItemController<Component> {
                     content = @Content)
     })
     @DeleteMapping("/{componentId}")
-    public void
-    deleteComponentById(
+    public void deleteComponentById(
             @PathVariable
             long componentId
     ) {

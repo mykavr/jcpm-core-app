@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/product")
 @Validated
 @Tag(name = "Product API")
+@SuppressWarnings("unused")
 public class ProductController extends BaseItemController<Product> {
 
     private final ProductComponentsService productComponentsService;
@@ -42,8 +43,7 @@ public class ProductController extends BaseItemController<Product> {
             @ApiResponse(responseCode = "400", description = "Invalid pagination parameters", content = @Content)
     })
     @GetMapping
-    public ListResponseWrapper<ProductResponseDto>
-    getProducts(
+    public ListResponseWrapper<ProductResponseDto> getProducts(
             @RequestParam(defaultValue = "0")
             @Schema(type = "integer", defaultValue = "0",
                     description = "Pagination: zero-based page index, must not be negative")
@@ -68,8 +68,7 @@ public class ProductController extends BaseItemController<Product> {
             @ApiResponse(responseCode = "400", description = "Invalid product ID", content = @Content)
     })
     @GetMapping("/{productId}")
-    public IResponseDto
-    getProductById(
+    public IResponseDto getProductById(
             @PathVariable
             @Min(value = 1, message = "Product ID must be greater than zero")
             long productId
@@ -84,8 +83,7 @@ public class ProductController extends BaseItemController<Product> {
             content = @Content(schema = @Schema(type = "integer", description = "Product ID", example = "1")))
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public long
-    createNewProduct(
+    public long createNewProduct(
             @RequestBody
             @Valid
             ProductRequestDto productDto
@@ -96,13 +94,12 @@ public class ProductController extends BaseItemController<Product> {
 
     @Operation(summary = "Edit a product")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Product data sucessfully updated", content = @Content),
+            @ApiResponse(responseCode = "200", description = "Product data successfully updated", content = @Content),
             @ApiResponse(responseCode = "404", description = "Product not found or invalid ID", content = @Content),
             @ApiResponse(responseCode = "400", description = "Invalid product ID or data", content = @Content)
     })
     @PatchMapping("/{productId}")
-    public void
-    editProduct(
+    public void editProduct(
             @PathVariable
             @Min(value = 1, message = "Product ID must be greater than zero")
             long productId,
@@ -122,8 +119,7 @@ public class ProductController extends BaseItemController<Product> {
             @ApiResponse(responseCode = "400", description = "Invalid product ID", content = @Content)
     })
     @DeleteMapping("/{productId}")
-    public void
-    deleteProductById(
+    public void deleteProductById(
             @PathVariable
             long productId
     ) {
