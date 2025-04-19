@@ -7,6 +7,7 @@ import com.theroom307.jcpm.core.data.repository.ComponentRepository;
 import com.theroom307.jcpm.core.data.repository.ProductComponentRepository;
 import com.theroom307.jcpm.core.data.repository.ProductRepository;
 import com.theroom307.jcpm.core.utils.constant.Endpoint;
+import com.theroom307.jcpm.core.utils.constant.ExpectedErrorMessage;
 import com.theroom307.jcpm.core.utils.data.TestComponentData;
 import com.theroom307.jcpm.core.utils.data.TestData;
 import com.theroom307.jcpm.core.utils.data.TestProductData;
@@ -25,6 +26,7 @@ import static com.theroom307.jcpm.core.utils.data.TestData.DEFAULT_COMPONENT_QUA
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Tag(INTEGRATION_TEST)
@@ -186,6 +188,20 @@ class ProductContainsComponentsTests {
         assertThat(productComponentRepository.findProductComponent(product.getId(), firstComponent.getId()))
                 .as("The first component should be removed")
                 .isNotPresent();
+    }
+
+    @Test
+    void deleteComponentAddedToProduct() throws Exception {
+        createProductComponentInRepository();
+
+        mockMvc.perform(delete(Endpoint.COMPONENT.getEndpoint(component.getId())))
+                .andDo(print())
+                .andExpect(status().isConflict())
+                .andExpect(content().string(ExpectedErrorMessage.componentIsInUse(component.getId())));
+
+        assertThat(componentRepository.findById(component.getId()))
+                .as("The component should be present")
+                .isPresent();
     }
 
     private void createProductComponentInRepository() {

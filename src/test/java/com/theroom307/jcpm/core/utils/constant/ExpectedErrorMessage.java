@@ -60,7 +60,7 @@ public class ExpectedErrorMessage {
         return String.format("'%s' must be a number", parameter);
     }
 
-    public static String componentIsInUse(int componentId) {
+    public static String componentIsInUse(long componentId) {
         return String.format("%s '%s' is used in some %s(s)",
                 Item.COMPONENT, componentId, Item.PRODUCT.toLowerCase());
     }
