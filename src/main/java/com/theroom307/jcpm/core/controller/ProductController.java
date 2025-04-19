@@ -1,9 +1,6 @@
 package com.theroom307.jcpm.core.controller;
 
-import com.theroom307.jcpm.core.data.dto.EditProductComponentDto;
-import com.theroom307.jcpm.core.data.dto.IResponseDto;
-import com.theroom307.jcpm.core.data.dto.ProductRequestDto;
-import com.theroom307.jcpm.core.data.dto.ProductResponseDto;
+import com.theroom307.jcpm.core.data.dto.*;
 import com.theroom307.jcpm.core.data.dto.wrapper.ListResponseWrapper;
 import com.theroom307.jcpm.core.data.model.Product;
 import com.theroom307.jcpm.core.service.ItemDtoMapper;
@@ -133,33 +130,93 @@ public class ProductController extends BaseItemController<Product> {
         service.deleteItem(productId);
     }
 
-    @Operation(summary = "Edit a product's components")
+    @Operation(summary = "Add a component to a product")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200",
-                    description = "Changes to the product's components have been applied",
+            @ApiResponse(responseCode = "201",
+                    description = "Component successfully added to the product",
                     content = @Content),
             @ApiResponse(responseCode = "400",
-                    description = "Bad Request, see details in the returned error message",
+                    description = "Bad Request - Invalid component ID or quantity",
                     content = @Content),
             @ApiResponse(responseCode = "404",
-                    description = "The product or component was not found",
+                    description = "Product or component not found",
+                    content = @Content),
+            @ApiResponse(responseCode = "409",
+                    description = "Component already exists in the product",
                     content = @Content)
     })
-    @PatchMapping("/{productId}/components")
-    public void editProductComponents(
+    @PostMapping("/{productId}/components")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void addComponentToProduct(
             @PathVariable
             @Min(value = 1, message = "Product ID must be greater than zero")
             long productId,
 
             @RequestBody
             @Valid
-            EditProductComponentDto editProductComponentDto
+            ComponentAddDto componentAddDto
     ) {
-        var componentId = editProductComponentDto.componentId();
-        var quantity = editProductComponentDto.getQuantity();
-        var add = editProductComponentDto.add();
-        var remove = editProductComponentDto.remove();
-        productComponentsService.editComponent(productId, componentId, quantity, add, remove);
+        productComponentsService.addComponentToProduct(
+                productId,
+                componentAddDto.getComponentId(),
+                componentAddDto.getQuantity());
+    }
+
+    @Operation(summary = "Remove a component from a product")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Component successfully removed from the product",
+                    content = @Content),
+            @ApiResponse(responseCode = "400",
+                    description = "Bad Request - Invalid product or component ID",
+                    content = @Content),
+            @ApiResponse(responseCode = "404",
+                    description = "Product not found or component not found in product",
+                    content = @Content)
+    })
+    @DeleteMapping("/{productId}/components/{componentId}")
+    public void removeComponentFromProduct(
+            @PathVariable
+            @Min(value = 1, message = "Product ID must be greater than zero")
+            long productId,
+
+            @PathVariable
+            @Min(value = 1, message = "Component ID must be greater than zero")
+            long componentId
+    ) {
+        productComponentsService.removeComponentFromProduct(productId, componentId);
+    }
+
+    @Operation(summary = "Update the quantity of a component in a product")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Component quantity successfully updated",
+                    content = @Content),
+            @ApiResponse(responseCode = "400",
+                    description = "Bad Request - Invalid product/component ID or quantity",
+                    content = @Content),
+            @ApiResponse(responseCode = "404",
+                    description = "Product not found, component not found, or component not in product",
+                    content = @Content)
+    })
+    @PatchMapping("/{productId}/components/{componentId}")
+    public void updateComponentQuantity(
+            @PathVariable
+            @Min(value = 1, message = "Product ID must be greater than zero")
+            long productId,
+
+            @PathVariable
+            @Min(value = 1, message = "Component ID must be greater than zero")
+            long componentId,
+
+            @RequestBody
+            @Valid
+            ComponentQuantityDto quantityDto
+    ) {
+        productComponentsService.updateComponentQuantity(
+                productId,
+                componentId,
+                quantityDto.getQuantity());
     }
 
     // for Open API Documentation

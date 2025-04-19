@@ -18,6 +18,10 @@ public class ExpectedErrorMessage {
         return "'component_id' is required";
     }
 
+    public static String quantityIsRequired() {
+        return "'quantity' is required";
+    }
+
     public static String componentNameIsRequired() {
         return "Component name is required";
     }
@@ -36,10 +40,6 @@ public class ExpectedErrorMessage {
                 Item.COMPONENT.toLowerCase(), componentId);
     }
 
-    public static String invalidEditProductComponentRequest() {
-        return "Invalid request: both 'add' and 'remove' cannot be true";
-    }
-
     public static String somethingWentWrong() {
         return "Sorry, something went wrong";
     }
@@ -52,8 +52,8 @@ public class ExpectedErrorMessage {
         return "Page must not be negative";
     }
 
-    public static String quantityMustBePositive() {
-        return "Quantity must be greater than 0";
+    public static String quantityMustBeGreaterThanZero() {
+        return "Quantity must be greater than zero";
     }
 
     public static String parameterMustBeNumber(String parameter) {

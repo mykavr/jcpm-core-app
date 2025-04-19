@@ -10,7 +10,6 @@ import com.theroom307.jcpm.core.data.repository.ProductComponentRepository;
 import com.theroom307.jcpm.core.service.ItemService;
 import com.theroom307.jcpm.core.service.ProductComponentsService;
 import lombok.AllArgsConstructor;
-import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -24,30 +23,20 @@ public class ProductComponentsServiceImpl implements ProductComponentsService {
     private ProductComponentRepository productComponentRepository;
 
     @Override
-    public void editComponent(long productId, long componentId, int quantity, boolean add, boolean remove) {
-        if (add && remove) {
-            var error = "Invalid request: both 'add' and 'remove' cannot be true";
-            throw new BadRequestException(error);
-        }
+    public void addComponentToProduct(long productId, long componentId, int quantity) {
+        validateQuantity(quantity);
+
         var product = productService.getItem(productId);
-        if (add) {
-            var component = componentService.getItem(componentId);
-            addComponentToProduct(product, component, quantity);
-        } else if (remove) {
-            deleteComponent(productId, componentId);
-        } else {
-            // modify - will be implemented in a separate story
-            throw new NotImplementedException("Modify Product's Component is not implemented");
+        var component = componentService.getItem(componentId);
+
+        if (productComponentRepository
+                .findProductComponent(product.getId(), component.getId())
+                .isPresent()) {
+            throw new ConditionFailedException(
+                    String.format("Product '%s' already contains component '%s'", productId, componentId)
+            );
         }
-    }
 
-    @Override
-    public boolean isComponentInUse(long componentId) {
-        return productComponentRepository.countComponentUsage(componentId) > 0;
-    }
-
-    private void addComponentToProduct(Product product, Component component, int quantity) {
-        checkThatProductDoesNotContainComponent(product, component);
         var productComponent = ProductComponent.builder()
                 .product(product)
                 .component(component)
@@ -56,29 +45,56 @@ public class ProductComponentsServiceImpl implements ProductComponentsService {
         productComponentRepository.save(productComponent);
     }
 
-    private void checkThatProductDoesNotContainComponent(Product product, Component component) {
-        if (productComponentRepository
-                .findProductComponent(product.getId(), component.getId())
-                .isPresent()) {
-            throwProductAlreadyContainsComponentException(product.getId(), component.getId());
-        }
-    }
+    @Override
+    public void removeComponentFromProduct(long productId, long componentId) {
+        // Verify product exists
+        productService.getItem(productId);
 
-    private void deleteComponent(long productId, long componentId) {
         productComponentRepository
                 .findProductComponent(productId, componentId)
-                .ifPresentOrElse(productComponentRepository::delete,
-                        () -> throwProductDoesNotContainComponentException(productId, componentId));
-
+                .ifPresentOrElse(
+                        productComponentRepository::delete,
+                        () -> {
+                            throw new NotFoundException(
+                                    String.format("Product '%s' does not contain component '%s'", productId, componentId)
+                            );
+                        }
+                );
     }
 
-    private void throwProductAlreadyContainsComponentException(long productId, long componentId) {
-        throw new ConditionFailedException(String.format("Product '%s' already contains component '%s'",
-                productId, componentId));
+    @Override
+    public void updateComponentQuantity(long productId, long componentId, int quantity) {
+        validateQuantity(quantity);
+
+        // Verify product exists
+        productService.getItem(productId);
+
+        // Verify component exists
+        componentService.getItem(componentId);
+
+        // Find the product-component relationship
+        var productComponentOpt = productComponentRepository.findProductComponent(productId, componentId);
+
+        if (productComponentOpt.isEmpty()) {
+            throw new NotFoundException(
+                    String.format("Product '%s' does not contain component '%s'", productId, componentId)
+            );
+        }
+
+        // Update the quantity
+        var productComponent = productComponentOpt.get();
+        productComponent.setQuantity(quantity);
+        productComponentRepository.save(productComponent);
     }
 
-    private void throwProductDoesNotContainComponentException(long productId, long componentId) {
-        throw new NotFoundException(String.format("Product '%s' does not contain component '%s'",
-                productId, componentId));
+    @Override
+    public boolean isComponentInUse(long componentId) {
+        return productComponentRepository.countComponentUsage(componentId) > 0;
+    }
+
+    private void validateQuantity(int quantity) {
+        if (quantity <= 0) {
+            throw new BadRequestException("Quantity must be greater than zero");
+        }
     }
 }
