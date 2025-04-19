@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/component")
 @Validated
 @Tag(name = "Component API")
+@SuppressWarnings("unused")
 public class ComponentController extends BaseItemController<Component> {
 
     private final ProductComponentsService productComponentsService;

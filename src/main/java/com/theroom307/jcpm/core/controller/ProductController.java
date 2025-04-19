@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/product")
 @Validated
 @Tag(name = "Product API")
+@SuppressWarnings("unused")
 public class ProductController extends BaseItemController<Product> {
 
     private final ProductComponentsService productComponentsService;
