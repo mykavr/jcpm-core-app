@@ -24,9 +24,7 @@ public class ProductComponentsServiceImpl implements ProductComponentsService {
 
     @Override
     public void addComponentToProduct(long productId, long componentId, int quantity) {
-        if (quantity <= 0) {
-            throw new BadRequestException("Quantity must be greater than zero for add operations");
-        }
+        validateQuantity(quantity);
 
         var product = productService.getItem(productId);
         var component = componentService.getItem(componentId);
@@ -66,9 +64,7 @@ public class ProductComponentsServiceImpl implements ProductComponentsService {
 
     @Override
     public void updateComponentQuantity(long productId, long componentId, int quantity) {
-        if (quantity <= 0) {
-            throw new BadRequestException("Quantity must be greater than zero for update operations");
-        }
+        validateQuantity(quantity);
 
         // Verify product exists
         productService.getItem(productId);
@@ -94,5 +90,11 @@ public class ProductComponentsServiceImpl implements ProductComponentsService {
     @Override
     public boolean isComponentInUse(long componentId) {
         return productComponentRepository.countComponentUsage(componentId) > 0;
+    }
+
+    private void validateQuantity(int quantity) {
+        if (quantity <= 0) {
+            throw new BadRequestException("Quantity must be greater than zero");
+        }
     }
 }

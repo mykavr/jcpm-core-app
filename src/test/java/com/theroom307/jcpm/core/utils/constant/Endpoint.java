@@ -8,6 +8,8 @@ public enum Endpoint {
 
     PRODUCT_COMPONENTS(PRODUCT.getEndpoint() + "/components"), // Path param: product ID
 
+    PRODUCT_COMPONENT(PRODUCT_COMPONENTS.getEndpoint() + "/%s"), // Path params: product ID, component ID
+
     COMPONENTS("/api/v1/component"),
 
     COMPONENT(COMPONENTS.getEndpoint() + "/%s"); // Path param: component ID
