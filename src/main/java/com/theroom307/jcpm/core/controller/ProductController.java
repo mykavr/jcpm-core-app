@@ -159,7 +159,15 @@ public class ProductController extends BaseItemController<Product> {
         var quantity = editProductComponentDto.getQuantity();
         var add = editProductComponentDto.add();
         var remove = editProductComponentDto.remove();
-        productComponentsService.editComponent(productId, componentId, quantity, add, remove);
+
+        // Call the appropriate service method based on the flags
+        if (add) {
+            productComponentsService.addComponentToProduct(productId, componentId, quantity);
+        } else if (remove) {
+            productComponentsService.removeComponentFromProduct(productId, componentId);
+        } else {
+            productComponentsService.updateComponentQuantity(productId, componentId, quantity);
+        }
     }
 
     // for Open API Documentation

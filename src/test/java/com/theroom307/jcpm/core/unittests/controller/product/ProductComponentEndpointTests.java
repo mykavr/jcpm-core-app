@@ -17,8 +17,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
@@ -66,15 +66,15 @@ class ProductComponentEndpointTests {
                 .perform(createRequestWithPayload(productId, getAddComponentToProductRequestBody(componentId, quantity)))
                 .andDo(print());
         verify(productComponentsService)
-                .editComponent(productId, componentId, quantity, true, false);
+                .addComponentToProduct(productId, componentId, quantity);
     }
 
     @Test
     void editComponents_whenAddComponentToNonExistingProduct_shouldReturn404() throws Exception {
-        var productId = 123;
+        long productId = 123;
 
         doThrow(new ItemNotFoundException(Item.PRODUCT.toString(), productId))
-                .when(productComponentsService).editComponent(anyLong(), anyLong(), anyInt(), anyBoolean(), anyBoolean());
+                .when(productComponentsService).addComponentToProduct(eq(productId), anyLong(), anyInt());
 
         this.mockMvc
                 .perform(createRequestWithPayload(productId, getAddComponentRequestBody()))
@@ -85,11 +85,11 @@ class ProductComponentEndpointTests {
 
     @Test
     void editComponents_whenAddNonExistingComponent_shouldReturn404() throws Exception {
-        var componentId = 321;
+        long componentId = 321;
 
         doThrow(new ItemNotFoundException(Item.COMPONENT.toString(), componentId))
                 .when(productComponentsService)
-                .editComponent(anyLong(), anyLong(), anyInt(), anyBoolean(), anyBoolean());
+                .addComponentToProduct(anyLong(), eq(componentId), anyInt());
 
         this.mockMvc
                 .perform(createRequestWithPayload(getAddComponentToProductRequestBody(componentId)))
@@ -113,8 +113,7 @@ class ProductComponentEndpointTests {
                 .perform(createRequestWithPayload(getAddComponentToProductRequestBody()))
                 .andDo(print());
         verify(productComponentsService)
-                .editComponent(VALID_PRODUCT_ID, VALID_COMPONENT_ID,
-                        DEFAULT_COMPONENT_QUANTITY, true, false);
+                .addComponentToProduct(VALID_PRODUCT_ID, VALID_COMPONENT_ID, DEFAULT_COMPONENT_QUANTITY);
     }
 
     @ParameterizedTest
@@ -135,7 +134,7 @@ class ProductComponentEndpointTests {
 
         doThrow(new ConditionFailedException(errorMessage))
                 .when(productComponentsService)
-                .editComponent(anyLong(), anyLong(), anyInt(), anyBoolean(), anyBoolean());
+                .addComponentToProduct(anyLong(), anyLong(), anyInt());
 
         var payload = getAddComponentToProductRequestBody();
         var request = createRequestWithPayload(payload);
@@ -168,15 +167,15 @@ class ProductComponentEndpointTests {
                 .perform(createRequestWithPayload(productId, getRemoveComponentFromProductRequestBody(componentId)))
                 .andDo(print());
         verify(productComponentsService)
-                .editComponent(productId, componentId, DEFAULT_COMPONENT_QUANTITY, false, true);
+                .removeComponentFromProduct(productId, componentId);
     }
 
     @Test
     void editComponents_whenRemoveFromNonExistingProduct_shouldReturn404() throws Exception {
-        var productId = 123;
+        long productId = 123;
 
         doThrow(new ItemNotFoundException(Item.PRODUCT.toString(), productId))
-                .when(productComponentsService).editComponent(anyLong(), anyLong(), anyInt(), anyBoolean(), anyBoolean());
+                .when(productComponentsService).removeComponentFromProduct(eq(productId), anyLong());
 
         this.mockMvc
                 .perform(createRequestWithPayload(productId, getRemoveComponentRequestBody()))
@@ -187,15 +186,15 @@ class ProductComponentEndpointTests {
 
     @Test
     void editComponents_whenRemoveNotAddedComponent_shouldReturn404() throws Exception {
-        var productId = 123;
-        var componentId = 321;
+        long productId = 123;
+        long componentId = 321;
         var errorMessage = ExpectedErrorMessage.productDoesNotContainComponent(productId, componentId);
 
         doThrow(new NotFoundException(errorMessage))
-                .when(productComponentsService).editComponent(anyLong(), anyLong(), anyInt(), anyBoolean(), anyBoolean());
+                .when(productComponentsService).removeComponentFromProduct(eq(productId), eq(componentId));
 
         this.mockMvc
-                .perform(createRequestWithPayload(productId, getAddComponentToProductRequestBody(componentId)))
+                .perform(createRequestWithPayload(productId, getRemoveComponentFromProductRequestBody(componentId)))
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(content().string(errorMessage));
@@ -219,7 +218,7 @@ class ProductComponentEndpointTests {
         var errorMessage = "Bad Request Error Message";
 
         doThrow(new BadRequestException(errorMessage))
-                .when(productComponentsService).editComponent(anyLong(), anyLong(), anyInt(), anyBoolean(), anyBoolean());
+                .when(productComponentsService).addComponentToProduct(anyLong(), anyLong(), anyInt());
 
         this.mockMvc
                 .perform(createRequestWithPayload(getInvalidRequestWithBothAddAndRemoveAreTrue()))
@@ -277,5 +276,4 @@ class ProductComponentEndpointTests {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(payload);
     }
-
 }

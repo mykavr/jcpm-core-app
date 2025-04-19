@@ -61,7 +61,7 @@ class ProductComponentServiceTests {
      */
 
     @Test
-    void editComponent_whenAddComponent_existingProduct_existingComponent_shouldSaveToRepository() {
+    void addComponentToProduct_existingProduct_existingComponent_shouldSaveToRepository() {
         var product = TestProductData.getProduct();
         var component = TestComponentData.getComponent();
         var quantity = 7;
@@ -74,55 +74,55 @@ class ProductComponentServiceTests {
         when(productService.getItem(anyLong())).thenReturn(product);
         when(componentService.getItem(anyLong())).thenReturn(component);
 
-        callAddComponentMethod(product.getId(), component.getId(), quantity);
+        service.addComponentToProduct(product.getId(), component.getId(), quantity);
 
         verify(productComponentRepository).save(productComponent);
     }
 
     @Test
-    void editComponent_whenAddComponent_shouldRequestFromProductService() {
+    void addComponentToProduct_shouldRequestFromProductService() {
         mockServices();
 
         var productId = 123L;
-        callAddComponentMethod(productId, VALID_COMPONENT_ID, DEFAULT_COMPONENT_QUANTITY);
+        service.addComponentToProduct(productId, VALID_COMPONENT_ID, DEFAULT_COMPONENT_QUANTITY);
         verify(productService).getItem(productId);
     }
 
     @Test
-    void editComponent_whenAddComponent_shouldRequestFromComponentService() {
+    void addComponentToProduct_shouldRequestFromComponentService() {
         mockServices();
 
         var componentId = 123L;
-        callAddComponentMethod(VALID_PRODUCT_ID, componentId, DEFAULT_COMPONENT_QUANTITY);
+        service.addComponentToProduct(VALID_PRODUCT_ID, componentId, DEFAULT_COMPONENT_QUANTITY);
         verify(componentService).getItem(componentId);
     }
 
     @Test
-    void editComponent_whenAddComponent_nonExistingProduct_shouldThrowProductNotFoundException() {
+    void addComponentToProduct_nonExistingProduct_shouldThrowProductNotFoundException() {
         var productId = 1234L;
         var expectedException = new ItemNotFoundException(Item.PRODUCT.toString(), productId);
         when(productService.getItem(anyLong())).thenThrow(expectedException);
 
-        assertThatThrownBy(() -> callAddComponentMethod(productId, VALID_COMPONENT_ID, DEFAULT_COMPONENT_QUANTITY))
+        assertThatThrownBy(() -> service.addComponentToProduct(productId, VALID_COMPONENT_ID, DEFAULT_COMPONENT_QUANTITY))
                 .isInstanceOf(expectedException.getClass())
                 .hasMessage(expectedException.getMessage());
     }
 
     @Test
-    void editComponent_whenAddComponent_nonExistingComponent_shouldThrowComponentNotFoundException() {
+    void addComponentToProduct_nonExistingComponent_shouldThrowComponentNotFoundException() {
         mockProductService();
 
         var componentId = 1234L;
         var expectedException = new ItemNotFoundException(Item.COMPONENT.toString(), componentId);
         when(componentService.getItem(anyLong())).thenThrow(expectedException);
 
-        assertThatThrownBy(() -> callAddComponentMethod(VALID_PRODUCT_ID, componentId, DEFAULT_COMPONENT_QUANTITY))
+        assertThatThrownBy(() -> service.addComponentToProduct(VALID_PRODUCT_ID, componentId, DEFAULT_COMPONENT_QUANTITY))
                 .isInstanceOf(expectedException.getClass())
                 .hasMessage(expectedException.getMessage());
     }
 
     @Test
-    void editComponent_whenAddComponent_componentAlreadyAdded_shouldThrowConditionFailedException() {
+    void addComponentToProduct_componentAlreadyAdded_shouldThrowConditionFailedException() {
         mockServices();
 
         var productComponent = anyProductComponent().orElseThrow(/*should always be present*/);
@@ -132,7 +132,7 @@ class ProductComponentServiceTests {
         when(productComponentRepository.findProductComponent(productId, componentId))
                 .thenReturn(Optional.of(productComponent));
 
-        assertThatThrownBy(() -> callAddComponentMethod(productId, componentId, DEFAULT_COMPONENT_QUANTITY))
+        assertThatThrownBy(() -> service.addComponentToProduct(productId, componentId, DEFAULT_COMPONENT_QUANTITY))
                 .isInstanceOf(ConditionFailedException.class)
                 .hasMessage(ExpectedErrorMessage.productAlreadyContainsComponent(productId, componentId));
     }
@@ -142,7 +142,7 @@ class ProductComponentServiceTests {
      */
 
     @Test
-    void editComponent_whenRemoveComponent_existingProduct_addedComponent_shouldDeleteFromRepository() {
+    void removeComponentFromProduct_existingProduct_addedComponent_shouldDeleteFromRepository() {
         var product = TestProductData.getProduct();
         var component = TestComponentData.getComponent();
         var productComponent = ProductComponent.builder()
@@ -154,56 +154,129 @@ class ProductComponentServiceTests {
         when(productComponentRepository.findProductComponent(anyLong(), anyLong()))
                 .thenReturn(Optional.of(productComponent));
 
-        callRemoveComponentMethod(product.getId(), component.getId());
+        service.removeComponentFromProduct(product.getId(), component.getId());
 
         verify(productComponentRepository).delete(productComponent);
     }
 
     @Test
-    void editComponent_whenRemoveComponent_shouldRequestFromProductService() {
+    void removeComponentFromProduct_shouldRequestFromProductService() {
         mockProductService();
         when(productComponentRepository.findProductComponent(anyLong(), anyLong()))
                 .thenReturn(anyProductComponent());
 
         var productId = 123L;
-        callRemoveComponentMethod(productId, VALID_COMPONENT_ID);
+        service.removeComponentFromProduct(productId, VALID_COMPONENT_ID);
         verify(productService).getItem(productId);
     }
 
     @Test
-    void editComponent_whenRemoveComponent_shouldRequestFromProductComponentRepository() {
+    void removeComponentFromProduct_shouldRequestFromProductComponentRepository() {
         mockProductService();
         when(productComponentRepository.findProductComponent(anyLong(), anyLong()))
                 .thenReturn(anyProductComponent());
 
         var productId = 123L;
         var componentId = 321L;
-        callRemoveComponentMethod(productId, componentId);
+        service.removeComponentFromProduct(productId, componentId);
         verify(productComponentRepository).findProductComponent(productId, componentId);
     }
 
     @Test
-    void editComponent_whenRemoveComponent_nonExistingProduct_shouldThrowProductNotFoundException() {
+    void removeComponentFromProduct_nonExistingProduct_shouldThrowProductNotFoundException() {
         var productId = 1234L;
         var expectedException = new ItemNotFoundException(Item.PRODUCT.toString(), productId);
         when(productService.getItem(anyLong())).thenThrow(expectedException);
 
-        assertThatThrownBy(() -> callRemoveComponentMethod(productId, VALID_COMPONENT_ID))
+        assertThatThrownBy(() -> service.removeComponentFromProduct(productId, VALID_COMPONENT_ID))
                 .isInstanceOf(expectedException.getClass())
                 .hasMessage(expectedException.getMessage());
     }
 
     @Test
-    void editComponent_whenRemoveComponent_existingProduct_unrelatedComponent_shouldThrowNotFoundException() {
+    void removeComponentFromProduct_existingProduct_unrelatedComponent_shouldThrowNotFoundException() {
         mockProductService();
         when(productComponentRepository.findProductComponent(anyLong(), anyLong()))
                 .thenReturn(Optional.empty());
 
         var productId = 123L;
         var componentId = 321L;
-        assertThatThrownBy(() -> callRemoveComponentMethod(productId, componentId))
+        assertThatThrownBy(() -> service.removeComponentFromProduct(productId, componentId))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(ExpectedErrorMessage.productDoesNotContainComponent(productId, componentId));
+    }
+
+    /*
+        UPDATE COMPONENT QUANTITY
+     */
+
+    @Test
+    void updateComponentQuantity_existingProduct_existingComponent_shouldUpdateAndSave() {
+        var product = TestProductData.getProduct();
+        var component = TestComponentData.getComponent();
+        var productComponent = ProductComponent.builder()
+                .product(product)
+                .component(component)
+                .quantity(1) // Initial quantity
+                .build();
+
+        var newQuantity = 5;
+
+        when(productService.getItem(anyLong())).thenReturn(product);
+        when(componentService.getItem(anyLong())).thenReturn(component);
+        when(productComponentRepository.findProductComponent(product.getId(), component.getId()))
+                .thenReturn(Optional.of(productComponent));
+
+        service.updateComponentQuantity(product.getId(), component.getId(), newQuantity);
+
+        // Verify the quantity was updated
+        assertThat(productComponent.getQuantity()).isEqualTo(newQuantity);
+        verify(productComponentRepository).save(productComponent);
+    }
+
+    @Test
+    void updateComponentQuantity_nonExistingProduct_shouldThrowProductNotFoundException() {
+        var productId = 1234L;
+        var expectedException = new ItemNotFoundException(Item.PRODUCT.toString(), productId);
+        when(productService.getItem(anyLong())).thenThrow(expectedException);
+
+        assertThatThrownBy(() -> service.updateComponentQuantity(productId, VALID_COMPONENT_ID, 5))
+                .isInstanceOf(expectedException.getClass())
+                .hasMessage(expectedException.getMessage());
+    }
+
+    @Test
+    void updateComponentQuantity_nonExistingComponent_shouldThrowComponentNotFoundException() {
+        mockProductService();
+
+        var componentId = 1234L;
+        var expectedException = new ItemNotFoundException(Item.COMPONENT.toString(), componentId);
+        when(componentService.getItem(anyLong())).thenThrow(expectedException);
+
+        assertThatThrownBy(() -> service.updateComponentQuantity(VALID_PRODUCT_ID, componentId, 5))
+                .isInstanceOf(expectedException.getClass())
+                .hasMessage(expectedException.getMessage());
+    }
+
+    @Test
+    void updateComponentQuantity_componentNotInProduct_shouldThrowNotFoundException() {
+        mockServices();
+        when(productComponentRepository.findProductComponent(anyLong(), anyLong()))
+                .thenReturn(Optional.empty());
+
+        var productId = 123L;
+        var componentId = 321L;
+
+        assertThatThrownBy(() -> service.updateComponentQuantity(productId, componentId, 5))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(ExpectedErrorMessage.productDoesNotContainComponent(productId, componentId));
+    }
+
+    @Test
+    void updateComponentQuantity_invalidQuantity_shouldThrowBadRequestException() {
+        assertThatThrownBy(() -> service.updateComponentQuantity(VALID_PRODUCT_ID, VALID_COMPONENT_ID, 0))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("Quantity must be greater than zero");
     }
 
     /*
@@ -233,27 +306,8 @@ class ProductComponentServiceTests {
     }
 
     /*
-        INVALID PARAMETERS HANDLING
-     */
-
-    @Test
-    void editComponent_whenBothAddComponentAndRemoveComponentAreTrue_shouldThrowBadRequestException() {
-        assertThatThrownBy(() -> service.editComponent(VALID_PRODUCT_ID, VALID_COMPONENT_ID, DEFAULT_COMPONENT_QUANTITY, true, true))
-                .isInstanceOf(BadRequestException.class)
-                .hasMessage(ExpectedErrorMessage.invalidEditProductComponentRequest());
-    }
-
-    /*
         HELPER METHODS
      */
-
-    private void callAddComponentMethod(long productId, long componentId, int quantity) {
-        service.editComponent(productId, componentId, quantity, true, false);
-    }
-
-    private void callRemoveComponentMethod(long productId, long componentId) {
-        service.editComponent(productId, componentId, DEFAULT_COMPONENT_QUANTITY, false, true);
-    }
 
     private void mockServices() {
         mockProductService();

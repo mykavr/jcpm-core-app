@@ -1,16 +1,48 @@
 package com.theroom307.jcpm.core.service;
 
+import com.theroom307.jcpm.core.controller.exception.BadRequestException;
+import com.theroom307.jcpm.core.controller.exception.ConditionFailedException;
+import com.theroom307.jcpm.core.controller.exception.ItemNotFoundException;
+
 public interface ProductComponentsService {
 
     /**
-     * Add (add=true, remove=false), remove (add=false, remove=true), or modify (add=false, remove=false)
-     * components of a product.
-     * @throws com.theroom307.jcpm.core.controller.exception.ItemNotFoundException if a product or a component
-     * was not found.
-     * @throws com.theroom307.jcpm.core.controller.exception.BadRequestException when add=true and remove=true
+     * Adds a component to a product with the specified quantity.
+     *
+     * @param productId The ID of the product
+     * @param componentId The ID of the component to add
+     * @param quantity The quantity of the component to add
+     * @throws ItemNotFoundException if product or component not found
+     * @throws ConditionFailedException if product already contains the component
+     * @throws BadRequestException if quantity is invalid
      */
-    void editComponent(long productId, long componentId, int quantity, boolean add, boolean remove);
+    void addComponentToProduct(long productId, long componentId, int quantity);
 
+    /**
+     * Removes a component from a product.
+     *
+     * @param productId The ID of the product
+     * @param componentId The ID of the component to remove
+     * @throws ItemNotFoundException if product or component not found or if product does not contain the component
+     */
+    void removeComponentFromProduct(long productId, long componentId);
+
+    /**
+     * Updates the quantity of an existing component in a product.
+     *
+     * @param productId   The ID of the product
+     * @param componentId The ID of the component to modify
+     * @param quantity    The new quantity of the component
+     * @throws ItemNotFoundException if product or component not found or if product does not contain the component
+     * @throws BadRequestException   if quantity is invalid
+     */
+    void updateComponentQuantity(long productId, long componentId, int quantity);
+
+    /**
+     * Checks if a component is used in any product.
+     *
+     * @param componentId The ID of the component to check
+     * @return true if the component is used in at least one product, false otherwise
+     */
     boolean isComponentInUse(long componentId);
-
 }
