@@ -94,7 +94,7 @@ public class ProductController extends BaseItemController<Product> {
 
     @Operation(summary = "Edit a product")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Product data sucessfully updated", content = @Content),
+            @ApiResponse(responseCode = "200", description = "Product data successfully updated", content = @Content),
             @ApiResponse(responseCode = "404", description = "Product not found or invalid ID", content = @Content),
             @ApiResponse(responseCode = "400", description = "Invalid product ID or data", content = @Content)
     })

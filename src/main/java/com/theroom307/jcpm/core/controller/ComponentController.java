@@ -97,7 +97,7 @@ public class ComponentController extends BaseItemController<Component> {
 
     @Operation(summary = "Edit a component")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Component data sucessfully updated", content = @Content),
+            @ApiResponse(responseCode = "200", description = "Component data successfully updated", content = @Content),
             @ApiResponse(responseCode = "404", description = "Component not found or invalid ID", content = @Content),
             @ApiResponse(responseCode = "400", description = "Invalid component ID or data", content = @Content)
     })
