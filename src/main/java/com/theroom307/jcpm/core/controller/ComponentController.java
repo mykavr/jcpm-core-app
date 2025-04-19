@@ -45,8 +45,7 @@ public class ComponentController extends BaseItemController<Component> {
             @ApiResponse(responseCode = "400", description = "Invalid pagination parameters", content = @Content)
     })
     @GetMapping
-    public ListResponseWrapper<ComponentResponseDto>
-    getComponents(
+    public ListResponseWrapper<ComponentResponseDto> getComponents(
             @RequestParam(defaultValue = "0")
             @Schema(type = "integer", defaultValue = "0",
                     description = "Pagination: zero-based page index, must not be negative")
@@ -71,8 +70,7 @@ public class ComponentController extends BaseItemController<Component> {
             @ApiResponse(responseCode = "400", description = "Invalid component ID", content = @Content)
     })
     @GetMapping("/{componentId}")
-    public IResponseDto
-    getComponentById(
+    public IResponseDto getComponentById(
             @PathVariable
             @Min(value = 1, message = "Component ID must be greater than zero")
             long componentId
@@ -87,8 +85,7 @@ public class ComponentController extends BaseItemController<Component> {
             content = @Content(schema = @Schema(type = "integer", description = "Component ID", example = "1")))
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public long
-    createNewComponent(
+    public long createNewComponent(
             @RequestBody
             @Valid
             ComponentRequestDto componentDto
@@ -104,8 +101,7 @@ public class ComponentController extends BaseItemController<Component> {
             @ApiResponse(responseCode = "400", description = "Invalid component ID or data", content = @Content)
     })
     @PatchMapping("/{componentId}")
-    public void
-    editComponent(
+    public void editComponent(
             @PathVariable
             @Min(value = 1, message = "Component ID must be greater than zero")
             long componentId,
@@ -128,8 +124,7 @@ public class ComponentController extends BaseItemController<Component> {
                     content = @Content)
     })
     @DeleteMapping("/{componentId}")
-    public void
-    deleteComponentById(
+    public void deleteComponentById(
             @PathVariable
             long componentId
     ) {
