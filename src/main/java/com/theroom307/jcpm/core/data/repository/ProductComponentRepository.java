@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.lang.NonNull;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface ProductComponentRepository extends JpaRepository<ProductComponent, Long> {
@@ -16,4 +17,6 @@ public interface ProductComponentRepository extends JpaRepository<ProductCompone
     @Query("select count(p) from ProductComponent p where p.component.id = :id")
     long countComponentUsage(@Param("id") @NonNull Long id);
 
+    @Query("select p from ProductComponent p where p.product.id = :productId")
+    List<ProductComponent> findAllByProductId(@Param("productId") @NonNull Long productId);
 }

@@ -3,6 +3,8 @@ package com.theroom307.jcpm.core.service.impl;
 import com.theroom307.jcpm.core.controller.exception.BadRequestException;
 import com.theroom307.jcpm.core.controller.exception.ConditionFailedException;
 import com.theroom307.jcpm.core.controller.exception.NotFoundException;
+import com.theroom307.jcpm.core.data.dto.ComponentResponseDto;
+import com.theroom307.jcpm.core.data.dto.ProductComponentDto;
 import com.theroom307.jcpm.core.data.model.Component;
 import com.theroom307.jcpm.core.data.model.Product;
 import com.theroom307.jcpm.core.data.model.ProductComponent;
@@ -11,6 +13,8 @@ import com.theroom307.jcpm.core.service.ItemService;
 import com.theroom307.jcpm.core.service.ProductComponentsService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @AllArgsConstructor
@@ -90,6 +94,24 @@ public class ProductComponentsServiceImpl implements ProductComponentsService {
     @Override
     public boolean isComponentInUse(long componentId) {
         return productComponentRepository.countComponentUsage(componentId) > 0;
+    }
+
+    @Override
+    public List<ProductComponentDto> getComponentsForProduct(long productId) {
+        // Verify product exists
+        productService.getItem(productId);
+
+        List<ProductComponent> productComponents = productComponentRepository.findAllByProductId(productId);
+
+        return productComponents.stream()
+                .map(pc -> {
+                    // Create ComponentResponseDto from the Component entity
+                    ComponentResponseDto componentDto = ComponentResponseDto.fromEntity(pc.getComponent());
+
+                    // Return the combined DTO with component details and quantity
+                    return new ProductComponentDto(componentDto, pc.getQuantity());
+                })
+                .toList();
     }
 
     private void validateQuantity(int quantity) {

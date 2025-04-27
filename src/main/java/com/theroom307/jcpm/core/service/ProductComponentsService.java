@@ -3,6 +3,9 @@ package com.theroom307.jcpm.core.service;
 import com.theroom307.jcpm.core.controller.exception.BadRequestException;
 import com.theroom307.jcpm.core.controller.exception.ConditionFailedException;
 import com.theroom307.jcpm.core.controller.exception.ItemNotFoundException;
+import com.theroom307.jcpm.core.data.dto.ProductComponentDto;
+
+import java.util.List;
 
 public interface ProductComponentsService {
 
@@ -45,4 +48,13 @@ public interface ProductComponentsService {
      * @return true if the component is used in at least one product, false otherwise
      */
     boolean isComponentInUse(long componentId);
+
+    /**
+     * Gets all components with their quantities for a specific product.
+     *
+     * @param productId The ID of the product
+     * @return List of components with their quantities
+     * @throws ItemNotFoundException if the product doesn't exist
+     */
+    List<ProductComponentDto> getComponentsForProduct(long productId);
 }

@@ -7,6 +7,7 @@ import com.theroom307.jcpm.core.service.ItemDtoMapper;
 import com.theroom307.jcpm.core.service.ItemService;
 import com.theroom307.jcpm.core.service.ProductComponentsService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -16,8 +17,11 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/product")
@@ -213,6 +217,26 @@ public class ProductController extends BaseItemController<Product> {
                 productId,
                 componentId,
                 quantityDto.getQuantity());
+    }
+
+    @Operation(summary = "Get all components for a product with quantities")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "List of components with quantities for the product",
+                    content = @Content(
+                            mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = ProductComponentDto.class)))),
+            @ApiResponse(responseCode = "404", description = "Product not found", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Invalid product ID", content = @Content)
+    })
+    @GetMapping("/{productId}/components")
+    public ResponseEntity<List<ProductComponentDto>> getComponentsForProduct(
+            @PathVariable
+            @Min(value = 1, message = "Product ID must be greater than zero")
+            long productId
+    ) {
+        List<ProductComponentDto> components = productComponentsService.getComponentsForProduct(productId);
+        return ResponseEntity.ok(components);
     }
 
     // for Open API Documentation
