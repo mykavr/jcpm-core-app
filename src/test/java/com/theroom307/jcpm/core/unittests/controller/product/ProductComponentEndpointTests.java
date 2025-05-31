@@ -4,6 +4,8 @@ import com.theroom307.jcpm.core.controller.ProductController;
 import com.theroom307.jcpm.core.controller.exception.ConditionFailedException;
 import com.theroom307.jcpm.core.controller.exception.ItemNotFoundException;
 import com.theroom307.jcpm.core.controller.exception.NotFoundException;
+import com.theroom307.jcpm.core.data.dto.ComponentResponseDto;
+import com.theroom307.jcpm.core.data.dto.ProductComponentDto;
 import com.theroom307.jcpm.core.service.ItemDtoMapper;
 import com.theroom307.jcpm.core.service.ItemService;
 import com.theroom307.jcpm.core.service.ProductComponentsService;
@@ -20,13 +22,15 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
+import java.util.Collections;
+import java.util.List;
+
 import static com.theroom307.jcpm.core.TestTypes.UNIT_TEST;
 import static com.theroom307.jcpm.core.utils.data.TestComponentData.VALID_COMPONENT_ID;
 import static com.theroom307.jcpm.core.utils.data.TestData.*;
 import static com.theroom307.jcpm.core.utils.data.TestProductData.VALID_PRODUCT_ID;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -292,6 +296,79 @@ class ProductComponentEndpointTests {
     }
 
     /*
+        GET COMPONENTS FOR PRODUCT
+     */
+
+    @Test
+    void getComponentsForProduct_shouldReturn200() throws Exception {
+        var productComponents = createTestProductComponents();
+        when(productComponentsService.getComponentsForProduct(VALID_PRODUCT_ID))
+                .thenReturn(productComponents);
+
+        this.mockMvc
+                .perform(createGetComponentsRequest(VALID_PRODUCT_ID))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].component.id").value(1))
+                .andExpect(jsonPath("$[0].component.name").value("Component 1"))
+                .andExpect(jsonPath("$[0].quantity").value(5))
+                .andExpect(jsonPath("$[1].component.id").value(2))
+                .andExpect(jsonPath("$[1].component.name").value("Component 2"))
+                .andExpect(jsonPath("$[1].quantity").value(3));
+    }
+
+    @Test
+    void getComponentsForProduct_shouldCallProductComponentsService() throws Exception {
+        var productId = 123L;
+        when(productComponentsService.getComponentsForProduct(productId))
+                .thenReturn(Collections.emptyList());
+
+        this.mockMvc
+                .perform(createGetComponentsRequest(productId))
+                .andDo(print());
+
+        verify(productComponentsService).getComponentsForProduct(productId);
+    }
+
+    @Test
+    void getComponentsForProduct_emptyList_shouldReturn200WithEmptyArray() throws Exception {
+        when(productComponentsService.getComponentsForProduct(VALID_PRODUCT_ID))
+                .thenReturn(Collections.emptyList());
+
+        this.mockMvc
+                .perform(createGetComponentsRequest(VALID_PRODUCT_ID))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
+    void getComponentsForProduct_nonExistingProduct_shouldReturn404() throws Exception {
+        long productId = 123;
+
+        doThrow(new ItemNotFoundException(Item.PRODUCT.toString(), productId))
+                .when(productComponentsService).getComponentsForProduct(eq(productId));
+
+        this.mockMvc
+                .perform(createGetComponentsRequest(productId))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(content().string(ExpectedErrorMessage.productNotFound(productId)));
+    }
+
+    @ParameterizedTest
+    @ValueSource(longs = {0, -1})
+    void getComponentsForProduct_invalidProductId_shouldReturnBadRequest(long invalidProductId) throws Exception {
+        this.mockMvc
+                .perform(createGetComponentsRequest(invalidProductId))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    /*
         HELPER METHODS
      */
 
@@ -309,5 +386,19 @@ class ProductComponentEndpointTests {
         return patch(String.format("/api/v1/product/%d/components/%d", productId, componentId))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(payload);
+    }
+
+    private MockHttpServletRequestBuilder createGetComponentsRequest(long productId) {
+        return get(String.format("/api/v1/product/%d/components", productId));
+    }
+
+    private List<ProductComponentDto> createTestProductComponents() {
+        var component1 = new ComponentResponseDto(1L, "Component 1", "Description 1", "2023-01-01T00:00:00Z", "2023-01-01T00:00:00Z");
+        var component2 = new ComponentResponseDto(2L, "Component 2", "Description 2", "2023-01-02T00:00:00Z", "2023-01-02T00:00:00Z");
+
+        var productComponent1 = new ProductComponentDto(component1, 5);
+        var productComponent2 = new ProductComponentDto(component2, 3);
+
+        return List.of(productComponent1, productComponent2);
     }
 }
