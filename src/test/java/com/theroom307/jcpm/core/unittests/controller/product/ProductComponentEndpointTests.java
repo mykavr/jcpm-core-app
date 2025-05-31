@@ -311,12 +311,11 @@ class ProductComponentEndpointTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0].component.id").value(1))
-                .andExpect(jsonPath("$[0].component.name").value("Component 1"))
-                .andExpect(jsonPath("$[0].quantity").value(5))
-                .andExpect(jsonPath("$[1].component.id").value(2))
-                .andExpect(jsonPath("$[1].component.name").value("Component 2"))
-                .andExpect(jsonPath("$[1].quantity").value(3));
+                // Check that both components are present regardless of order
+                .andExpect(jsonPath("$[?(@.component.id == 1)].component.name").value("Component 1"))
+                .andExpect(jsonPath("$[?(@.component.id == 1)].quantity").value(5))
+                .andExpect(jsonPath("$[?(@.component.id == 2)].component.name").value("Component 2"))
+                .andExpect(jsonPath("$[?(@.component.id == 2)].quantity").value(3));
     }
 
     @Test
