@@ -22,6 +22,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static com.theroom307.jcpm.core.TestTypes.UNIT_TEST;
@@ -277,6 +278,67 @@ class ProductComponentServiceTests {
         assertThatThrownBy(() -> service.updateComponentQuantity(VALID_PRODUCT_ID, VALID_COMPONENT_ID, 0))
                 .isInstanceOf(BadRequestException.class)
                 .hasMessageContaining("Quantity must be greater than zero");
+    }
+
+    /*
+        GET COMPONENTS FOR PRODUCT
+     */
+
+    @Test
+    void getComponentsForProduct_existingProductWithComponents_shouldReturnComponentsMap() {
+        var product = TestProductData.getProduct();
+        var component1 = TestComponentData.getComponent();
+        var component2 = TestComponentData.getComponent();
+        component2.setId(456L);
+        component2.setName("second component");
+
+        var productComponent1 = ProductComponent.builder()
+                .product(product)
+                .component(component1)
+                .quantity(3)
+                .build();
+
+        var productComponent2 = ProductComponent.builder()
+                .product(product)
+                .component(component2)
+                .quantity(7)
+                .build();
+
+        when(productService.getItem(product.getId())).thenReturn(product);
+        when(productComponentRepository.findAllByProductId(product.getId()))
+                .thenReturn(List.of(productComponent1, productComponent2));
+
+        var result = service.getComponentsForProduct(product.getId());
+
+        assertThat(result)
+                .hasSize(2)
+                .containsEntry(component1, 3)
+                .containsEntry(component2, 7);
+    }
+
+    @Test
+    void getComponentsForProduct_existingProductWithNoComponents_shouldReturnEmptyMap() {
+        var product = TestProductData.getProduct();
+
+        when(productService.getItem(product.getId())).thenReturn(product);
+        when(productComponentRepository.findAllByProductId(product.getId()))
+                .thenReturn(List.of());
+
+        var result = service.getComponentsForProduct(product.getId());
+
+        assertThat(result)
+                .isEmpty();
+    }
+
+    @Test
+    void getComponentsForProduct_nonExistingProduct_shouldThrowProductNotFoundException() {
+        var productId = 1234L;
+        var expectedException = new ItemNotFoundException(Item.PRODUCT.toString(), productId);
+        when(productService.getItem(productId)).thenThrow(expectedException);
+
+        assertThatThrownBy(() -> service.getComponentsForProduct(productId))
+                .isInstanceOf(expectedException.getClass())
+                .hasMessage(expectedException.getMessage());
     }
 
     /*
