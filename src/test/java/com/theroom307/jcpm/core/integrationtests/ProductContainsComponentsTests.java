@@ -24,10 +24,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import static com.theroom307.jcpm.core.TestTypes.INTEGRATION_TEST;
 import static com.theroom307.jcpm.core.utils.data.TestData.DEFAULT_COMPONENT_QUANTITY;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @Tag(INTEGRATION_TEST)
 @SpringBootTest
@@ -188,6 +188,54 @@ class ProductContainsComponentsTests {
         assertThat(productComponentRepository.findProductComponent(product.getId(), firstComponent.getId()))
                 .as("The first component should be removed")
                 .isNotPresent();
+    }
+
+    @Test
+    void getComponentsForProduct() throws Exception {
+        // Given: product with multiple components
+        var firstComponent = componentRepository.save(TestComponentData.getComponentToCreate());
+        int firstComponentQuantity = 3;
+        createProductComponentInRepository(firstComponent, firstComponentQuantity);
+
+        var secondComponent = componentRepository.save(TestComponentData.getComponentToCreate());
+        int secondComponentQuantity = 5;
+        createProductComponentInRepository(secondComponent, secondComponentQuantity);
+
+        // When: getting components for the product
+        var endpoint = Endpoint.PRODUCT_COMPONENTS.getEndpoint(product.getId());
+
+        mockMvc.perform(get(endpoint))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$", hasSize(2)))
+
+                // Verify first component structure and data
+                .andExpect(jsonPath("$[0].component").exists())
+                .andExpect(jsonPath("$[0].component.id").isNumber())
+                .andExpect(jsonPath("$[0].component.name").isString())
+                .andExpect(jsonPath("$[0].component.description").isString())
+                .andExpect(jsonPath("$[0].component.created").isString())
+                .andExpect(jsonPath("$[0].component.modified").isString())
+                .andExpect(jsonPath("$[0].quantity").isNumber())
+
+                // Verify second component structure and data
+                .andExpect(jsonPath("$[1].component").exists())
+                .andExpect(jsonPath("$[1].component.id").isNumber())
+                .andExpect(jsonPath("$[1].component.name").isString())
+                .andExpect(jsonPath("$[1].component.description").isString())
+                .andExpect(jsonPath("$[1].component.created").isString())
+                .andExpect(jsonPath("$[1].component.modified").isString())
+                .andExpect(jsonPath("$[1].quantity").isNumber())
+
+                // Verify that each component has the correct ID and quantity
+                // Note: We can't guarantee order, so we check that the IDs and quantities exist somewhere
+                .andExpect(jsonPath("$[?(@.component.id == " + firstComponent.getId() + ")].quantity").value(firstComponentQuantity))
+                .andExpect(jsonPath("$[?(@.component.id == " + secondComponent.getId() + ")].quantity").value(secondComponentQuantity))
+
+                // Verify component names are correctly associated
+                .andExpect(jsonPath("$[?(@.component.id == " + firstComponent.getId() + ")].component.name").value(firstComponent.getName()))
+                .andExpect(jsonPath("$[?(@.component.id == " + secondComponent.getId() + ")].component.name").value(secondComponent.getName()));
     }
 
     @Test

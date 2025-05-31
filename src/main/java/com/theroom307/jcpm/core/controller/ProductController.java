@@ -7,6 +7,7 @@ import com.theroom307.jcpm.core.service.ItemDtoMapper;
 import com.theroom307.jcpm.core.service.ItemService;
 import com.theroom307.jcpm.core.service.ProductComponentsService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -18,6 +19,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+import static java.util.stream.Collectors.toList;
 
 @RestController
 @RequestMapping("/api/v1/product")
@@ -213,6 +218,27 @@ public class ProductController extends BaseItemController<Product> {
                 productId,
                 componentId,
                 quantityDto.getQuantity());
+    }
+
+    @Operation(summary = "Get all components for a product with quantities")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "List of components with quantities for the product",
+                    content = @Content(
+                            mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = ProductComponentDto.class)))),
+            @ApiResponse(responseCode = "404", description = "Product not found", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Invalid product ID", content = @Content)
+    })
+    @GetMapping("/{productId}/components")
+    public List<ProductComponentDto> getComponentsForProduct(
+            @PathVariable
+            @Min(value = 1, message = "Product ID must be greater than zero")
+            long productId
+    ) {
+        return productComponentsService.getComponentsForProduct(productId).entrySet().stream()
+                .map(entry -> ProductComponentDto.from(entry.getKey(), entry.getValue()))
+                .collect(toList());
     }
 
     // for Open API Documentation

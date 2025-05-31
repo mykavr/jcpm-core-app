@@ -12,6 +12,10 @@ import com.theroom307.jcpm.core.service.ProductComponentsService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
+
+import static java.util.stream.Collectors.toMap;
+
 @Service
 @AllArgsConstructor
 public class ProductComponentsServiceImpl implements ProductComponentsService {
@@ -90,6 +94,15 @@ public class ProductComponentsServiceImpl implements ProductComponentsService {
     @Override
     public boolean isComponentInUse(long componentId) {
         return productComponentRepository.countComponentUsage(componentId) > 0;
+    }
+
+    @Override
+    public Map<Component, Integer> getComponentsForProduct(long productId) {
+        // Verify product exists
+        productService.getItem(productId);
+
+        return productComponentRepository.findAllByProductId(productId).stream()
+                .collect(toMap(ProductComponent::getComponent, ProductComponent::getQuantity));
     }
 
     private void validateQuantity(int quantity) {
