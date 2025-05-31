@@ -4,13 +4,13 @@ import com.theroom307.jcpm.core.controller.ProductController;
 import com.theroom307.jcpm.core.controller.exception.ConditionFailedException;
 import com.theroom307.jcpm.core.controller.exception.ItemNotFoundException;
 import com.theroom307.jcpm.core.controller.exception.NotFoundException;
-import com.theroom307.jcpm.core.data.dto.ComponentResponseDto;
-import com.theroom307.jcpm.core.data.dto.ProductComponentDto;
+import com.theroom307.jcpm.core.data.model.Component;
 import com.theroom307.jcpm.core.service.ItemDtoMapper;
 import com.theroom307.jcpm.core.service.ItemService;
 import com.theroom307.jcpm.core.service.ProductComponentsService;
 import com.theroom307.jcpm.core.utils.constant.ExpectedErrorMessage;
 import com.theroom307.jcpm.core.utils.constant.Item;
+import com.theroom307.jcpm.core.utils.data.TestComponentData;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -23,7 +23,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import java.util.Collections;
-import java.util.List;
+import java.util.Map;
 
 import static com.theroom307.jcpm.core.TestTypes.UNIT_TEST;
 import static com.theroom307.jcpm.core.utils.data.TestComponentData.VALID_COMPONENT_ID;
@@ -323,7 +323,7 @@ class ProductComponentEndpointTests {
     void getComponentsForProduct_shouldCallProductComponentsService() throws Exception {
         var productId = 123L;
         when(productComponentsService.getComponentsForProduct(productId))
-                .thenReturn(Collections.emptyList());
+                .thenReturn(Collections.emptyMap());
 
         this.mockMvc
                 .perform(createGetComponentsRequest(productId))
@@ -335,7 +335,7 @@ class ProductComponentEndpointTests {
     @Test
     void getComponentsForProduct_emptyList_shouldReturn200WithEmptyArray() throws Exception {
         when(productComponentsService.getComponentsForProduct(VALID_PRODUCT_ID))
-                .thenReturn(Collections.emptyList());
+                .thenReturn(Collections.emptyMap());
 
         this.mockMvc
                 .perform(createGetComponentsRequest(VALID_PRODUCT_ID))
@@ -392,13 +392,15 @@ class ProductComponentEndpointTests {
         return get(String.format("/api/v1/product/%d/components", productId));
     }
 
-    private List<ProductComponentDto> createTestProductComponents() {
-        var component1 = new ComponentResponseDto(1L, "Component 1", "Description 1", "2023-01-01T00:00:00Z", "2023-01-01T00:00:00Z");
-        var component2 = new ComponentResponseDto(2L, "Component 2", "Description 2", "2023-01-02T00:00:00Z", "2023-01-02T00:00:00Z");
+    private Map<Component, Integer> createTestProductComponents() {
+        var component1 = TestComponentData.getComponent();
+        var component2 = TestComponentData.getComponent();
 
-        var productComponent1 = new ProductComponentDto(component1, 5);
-        var productComponent2 = new ProductComponentDto(component2, 3);
+        component1.setId(1L);
+        component1.setName("Component 1");
+        component2.setId(2L);
+        component2.setName("Component 2");
 
-        return List.of(productComponent1, productComponent2);
+        return Map.of(component1, 5, component2, 3);
     }
 }

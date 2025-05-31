@@ -22,6 +22,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static java.util.stream.Collectors.toList;
+
 @RestController
 @RequestMapping("/api/v1/product")
 @Validated
@@ -234,7 +236,9 @@ public class ProductController extends BaseItemController<Product> {
             @Min(value = 1, message = "Product ID must be greater than zero")
             long productId
     ) {
-        return productComponentsService.getComponentsForProduct(productId);
+        return productComponentsService.getComponentsForProduct(productId).entrySet().stream()
+                .map(entry -> ProductComponentDto.from(entry.getKey(), entry.getValue()))
+                .collect(toList());
     }
 
     // for Open API Documentation
