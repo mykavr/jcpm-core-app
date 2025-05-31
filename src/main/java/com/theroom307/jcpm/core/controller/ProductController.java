@@ -17,7 +17,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -230,13 +229,12 @@ public class ProductController extends BaseItemController<Product> {
             @ApiResponse(responseCode = "400", description = "Invalid product ID", content = @Content)
     })
     @GetMapping("/{productId}/components")
-    public ResponseEntity<List<ProductComponentDto>> getComponentsForProduct(
+    public List<ProductComponentDto> getComponentsForProduct(
             @PathVariable
             @Min(value = 1, message = "Product ID must be greater than zero")
             long productId
     ) {
-        List<ProductComponentDto> components = productComponentsService.getComponentsForProduct(productId);
-        return ResponseEntity.ok(components);
+        return productComponentsService.getComponentsForProduct(productId);
     }
 
     // for Open API Documentation
