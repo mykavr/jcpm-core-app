@@ -19,4 +19,7 @@ public interface ProductComponentRepository extends JpaRepository<ProductCompone
 
     @Query("select p from ProductComponent p where p.product.id = :productId")
     List<ProductComponent> findAllByProductId(@Param("productId") @NonNull Long productId);
+
+    @Query("select p from ProductComponent p where p.component.id = :componentId")
+    List<ProductComponent> findAllByComponentId(@Param("componentId") @NonNull Long componentId);
 }

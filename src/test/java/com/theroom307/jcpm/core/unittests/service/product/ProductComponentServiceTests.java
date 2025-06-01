@@ -346,6 +346,69 @@ class ProductComponentServiceTests {
      */
 
     @Test
+    void getProductsByComponent_existingComponentWithProducts_shouldReturnProductsPage() {
+        var component = TestComponentData.getComponent();
+        var product1 = TestProductData.getProduct();
+        var product2 = TestProductData.getProduct();
+        product2.setId(456L);
+        product2.setName("second product");
+
+        var productComponent1 = ProductComponent.builder()
+                .product(product1)
+                .component(component)
+                .quantity(3)
+                .build();
+
+        var productComponent2 = ProductComponent.builder()
+                .product(product2)
+                .component(component)
+                .quantity(7)
+                .build();
+
+        when(componentService.getItem(component.getId())).thenReturn(component);
+        when(productComponentRepository.findAllByComponentId(component.getId()))
+                .thenReturn(List.of(productComponent1, productComponent2));
+
+        var result = service.getProductsByComponent(component.getId(), 0, 10);
+
+        assertThat(result.getContent())
+                .hasSize(2)
+                .contains(product1, product2);
+        assertThat(result.getTotalElements()).isEqualTo(2);
+        assertThat(result.getNumber()).isEqualTo(0);
+        assertThat(result.getSize()).isEqualTo(10);
+    }
+
+    @Test
+    void getProductsByComponent_existingComponentWithNoProducts_shouldReturnEmptyPage() {
+        var component = TestComponentData.getComponent();
+
+        when(componentService.getItem(component.getId())).thenReturn(component);
+        when(productComponentRepository.findAllByComponentId(component.getId()))
+                .thenReturn(List.of());
+
+        var result = service.getProductsByComponent(component.getId(), 0, 10);
+
+        assertThat(result.getContent()).isEmpty();
+        assertThat(result.getTotalElements()).isEqualTo(0);
+    }
+
+    @Test
+    void getProductsByComponent_nonExistingComponent_shouldThrowComponentNotFoundException() {
+        var componentId = 1234L;
+        var expectedException = new ItemNotFoundException(Item.COMPONENT.toString(), componentId);
+        when(componentService.getItem(componentId)).thenThrow(expectedException);
+
+        assertThatThrownBy(() -> service.getProductsByComponent(componentId, 0, 10))
+                .isInstanceOf(expectedException.getClass())
+                .hasMessage(expectedException.getMessage());
+    }
+
+    /*
+        IS COMPONENT IN USE
+     */
+
+    @Test
     void isComponentInUse_whenComponentUsedInOneProduct_shouldReturnTrue() {
         var componentId = 419L;
         when(productComponentRepository.countComponentUsage(componentId))

@@ -10,10 +10,15 @@ import com.theroom307.jcpm.core.data.repository.ProductComponentRepository;
 import com.theroom307.jcpm.core.service.ItemService;
 import com.theroom307.jcpm.core.service.ProductComponentsService;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
 
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
 @Service
@@ -103,6 +108,25 @@ public class ProductComponentsServiceImpl implements ProductComponentsService {
 
         return productComponentRepository.findAllByProductId(productId).stream()
                 .collect(toMap(ProductComponent::getComponent, ProductComponent::getQuantity));
+    }
+
+    @Override
+    public Page<Product> getProductsByComponent(long componentId, int page, int size) {
+        componentService.getItem(componentId);
+
+        var productComponents = productComponentRepository.findAllByComponentId(componentId);
+
+        var products = productComponents.stream()
+                .map(ProductComponent::getProduct)
+                .distinct()
+                .collect(toList());
+
+        var pageable = PageRequest.of(page, size);
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), products.size());
+        var pageContent = start >= products.size() ? List.<Product>of() : products.subList(start, end);
+
+        return new PageImpl<>(pageContent, pageable, products.size());
     }
 
     private void validateQuantity(int quantity) {

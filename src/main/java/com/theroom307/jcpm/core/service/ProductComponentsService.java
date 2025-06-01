@@ -4,6 +4,8 @@ import com.theroom307.jcpm.core.controller.exception.BadRequestException;
 import com.theroom307.jcpm.core.controller.exception.ConditionFailedException;
 import com.theroom307.jcpm.core.controller.exception.ItemNotFoundException;
 import com.theroom307.jcpm.core.data.model.Component;
+import com.theroom307.jcpm.core.data.model.Product;
+import org.springframework.data.domain.Page;
 
 import java.util.Map;
 
@@ -57,4 +59,15 @@ public interface ProductComponentsService {
      * @throws ItemNotFoundException if the product doesn't exist
      */
     Map<Component, Integer> getComponentsForProduct(long productId);
+
+    /**
+     * Gets all products that contain a specific component.
+     *
+     * @param componentId The ID of the component
+     * @param page The page number for pagination
+     * @param size The page size for pagination
+     * @return Page of products containing the component
+     * @throws ItemNotFoundException if the component doesn't exist
+     */
+    Page<Product> getProductsByComponent(long componentId, int page, int size);
 }
