@@ -8,6 +8,7 @@ import com.theroom307.jcpm.core.data.model.Component;
 import com.theroom307.jcpm.core.data.model.Product;
 import com.theroom307.jcpm.core.data.model.ProductComponent;
 import com.theroom307.jcpm.core.data.repository.ProductComponentRepository;
+import com.theroom307.jcpm.core.data.repository.ProductRepository;
 import com.theroom307.jcpm.core.service.ItemService;
 import com.theroom307.jcpm.core.service.ProductComponentsService;
 import com.theroom307.jcpm.core.service.impl.ProductComponentsServiceImpl;
@@ -21,6 +22,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
 import java.util.Optional;
@@ -52,9 +56,12 @@ class ProductComponentServiceTests {
     @Mock
     private ProductComponentRepository productComponentRepository;
 
+    @Mock
+    private ProductRepository productRepository;
+
     @BeforeEach
     void initProductComponentsService() {
-        service = new ProductComponentsServiceImpl(productService, componentService, productComponentRepository);
+        service = new ProductComponentsServiceImpl(productService, componentService, productComponentRepository, productRepository);
     }
 
     /*
@@ -353,21 +360,12 @@ class ProductComponentServiceTests {
         product2.setId(456L);
         product2.setName("second product");
 
-        var productComponent1 = ProductComponent.builder()
-                .product(product1)
-                .component(component)
-                .quantity(3)
-                .build();
-
-        var productComponent2 = ProductComponent.builder()
-                .product(product2)
-                .component(component)
-                .quantity(7)
-                .build();
+        var pageable = PageRequest.of(0, 10);
+        var productsPage = new PageImpl<>(List.of(product1, product2), pageable, 2);
 
         when(componentService.getItem(component.getId())).thenReturn(component);
-        when(productComponentRepository.findAllByComponentId(component.getId()))
-                .thenReturn(List.of(productComponent1, productComponent2));
+        when(productRepository.findDistinctByComponentId(component.getId(), pageable))
+                .thenReturn(productsPage);
 
         var result = service.getProductsByComponent(component.getId(), 0, 10);
 
@@ -382,10 +380,12 @@ class ProductComponentServiceTests {
     @Test
     void getProductsByComponent_existingComponentWithNoProducts_shouldReturnEmptyPage() {
         var component = TestComponentData.getComponent();
+        var pageable = PageRequest.of(0, 10);
+        var emptyPage = new PageImpl<Product>(List.of(), pageable, 0);
 
         when(componentService.getItem(component.getId())).thenReturn(component);
-        when(productComponentRepository.findAllByComponentId(component.getId()))
-                .thenReturn(List.of());
+        when(productRepository.findDistinctByComponentId(component.getId(), pageable))
+                .thenReturn(emptyPage);
 
         var result = service.getProductsByComponent(component.getId(), 0, 10);
 
