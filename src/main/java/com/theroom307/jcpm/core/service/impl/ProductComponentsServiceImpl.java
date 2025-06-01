@@ -7,9 +7,12 @@ import com.theroom307.jcpm.core.data.model.Component;
 import com.theroom307.jcpm.core.data.model.Product;
 import com.theroom307.jcpm.core.data.model.ProductComponent;
 import com.theroom307.jcpm.core.data.repository.ProductComponentRepository;
+import com.theroom307.jcpm.core.data.repository.ProductRepository;
 import com.theroom307.jcpm.core.service.ItemService;
 import com.theroom307.jcpm.core.service.ProductComponentsService;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -25,6 +28,8 @@ public class ProductComponentsServiceImpl implements ProductComponentsService {
     private ItemService<Component> componentService;
 
     private ProductComponentRepository productComponentRepository;
+
+    private ProductRepository productRepository;
 
     @Override
     public void addComponentToProduct(long productId, long componentId, int quantity) {
@@ -103,6 +108,14 @@ public class ProductComponentsServiceImpl implements ProductComponentsService {
 
         return productComponentRepository.findAllByProductId(productId).stream()
                 .collect(toMap(ProductComponent::getComponent, ProductComponent::getQuantity));
+    }
+
+    @Override
+    public Page<Product> getProductsByComponent(long componentId, int page, int size) {
+        componentService.getItem(componentId);
+
+        var pageable = PageRequest.of(page, size);
+        return productRepository.findDistinctByComponentId(componentId, pageable);
     }
 
     private void validateQuantity(int quantity) {

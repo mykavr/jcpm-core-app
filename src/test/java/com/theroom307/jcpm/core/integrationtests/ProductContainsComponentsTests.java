@@ -267,6 +267,78 @@ class ProductContainsComponentsTests {
         assertThatProductComponentIsSavedInRepository(product, component);
     }
 
+    @Test
+    void getProductsByComponent_existingComponentInMultipleProducts_shouldReturnAllProducts() throws Exception {
+        var secondProduct = productRepository.save(TestProductData.getProductToCreate());
+        var thirdProduct = productRepository.save(TestProductData.getProductToCreate());
+        
+        createProductComponentInRepository(component, DEFAULT_COMPONENT_QUANTITY);
+        createProductComponentInRepository(secondProduct, component, 3);
+        createProductComponentInRepository(thirdProduct, component, 1);
+
+        var endpoint = Endpoint.PRODUCTS.getEndpoint() + "?componentId=" + component.getId();
+
+        mockMvc.perform(get(endpoint))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").isArray())
+                .andExpect(jsonPath("$.data", hasSize(3)))
+                .andExpect(jsonPath("$.pagination.total").value(3))
+                .andExpect(jsonPath("$.pagination.page").value(0))
+                .andExpect(jsonPath("$.pagination.size").value(10));
+    }
+
+    @Test
+    void getProductsByComponent_nonExistentComponent_shouldReturn404() throws Exception {
+        var nonExistentComponentId = 99999L;
+        var endpoint = Endpoint.PRODUCTS.getEndpoint() + "?componentId=" + nonExistentComponentId;
+
+        mockMvc.perform(get(endpoint))
+                .andDo(print())
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void getProductsByComponent_componentNotUsedInAnyProduct_shouldReturnEmptyList() throws Exception {
+        var unusedComponent = componentRepository.save(TestComponentData.getComponentToCreate());
+        var endpoint = Endpoint.PRODUCTS.getEndpoint() + "?componentId=" + unusedComponent.getId();
+
+        mockMvc.perform(get(endpoint))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").isArray())
+                .andExpect(jsonPath("$.data", hasSize(0)))
+                .andExpect(jsonPath("$.pagination.total").value(0));
+    }
+
+    @Test
+    void getProductsByComponent_oneOfTwoProductsContainsComponent_shouldReturnOnlyProductWithComponent() throws Exception {
+        var secondProduct = productRepository.save(TestProductData.getProductToCreate());
+        
+        createProductComponentInRepository(component, DEFAULT_COMPONENT_QUANTITY);
+
+        var endpoint = Endpoint.PRODUCTS.getEndpoint() + "?componentId=" + component.getId();
+
+        mockMvc.perform(get(endpoint))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").isArray())
+                .andExpect(jsonPath("$.data", hasSize(1)))
+                .andExpect(jsonPath("$.pagination.total").value(1))
+                .andExpect(jsonPath("$.pagination.page").value(0))
+                .andExpect(jsonPath("$.pagination.size").value(10))
+                .andExpect(jsonPath("$.data[0].id").value(product.getId()));
+    }
+
+    private void createProductComponentInRepository(Product product, Component component, int quantity) {
+        var productComponentEntity = ProductComponent.builder()
+                .product(product)
+                .component(component)
+                .quantity(quantity)
+                .build();
+        productComponentRepository.save(productComponentEntity);
+    }
+
     private void assertThatProductComponentIsSavedInRepository(Product product, Component component) {
         assertThat(productComponentRepository.findProductComponent(product.getId(), component.getId()))
                 .as("Product-component relation should be saved in the repository")

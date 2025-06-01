@@ -43,6 +43,11 @@ class ProductsEndpointTests {
     @MockitoBean
     private ItemService<Product> productService;
 
+    @Autowired
+    private ProductComponentsService productComponentsService;
+
+
+
     @Test
     void getProducts_whenNoProductsExist_shouldReturnEmptyProductListWrapper() throws Exception {
         Page<Product> emptyPage = Page.empty(PageRequest.of(0, 10));
@@ -103,5 +108,47 @@ class ProductsEndpointTests {
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(content().string(savedProductIdAsString));
+    }
+
+    @Test
+    void getProducts_withComponentId_shouldRequestFromProductComponentsService() throws Exception {
+        var componentId = 123L;
+        var products = new PageImpl<>(List.of(getProduct()), PageRequest.of(0, 10), 1);
+        when(productComponentsService.getProductsByComponent(anyLong(), anyInt(), anyInt())).thenReturn(products);
+
+        this.mockMvc
+                .perform(get(ENDPOINT + "?componentId=" + componentId))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        verify(productComponentsService).getProductsByComponent(componentId, 0, 10);
+        verify(productService, never()).getItems(anyInt(), anyInt());
+    }
+
+    @Test
+    void getProducts_withComponentId_shouldReturnProductListWrapper() throws Exception {
+        var componentId = 123L;
+        var products = new PageImpl<>(List.of(getProduct()), PageRequest.of(0, 10), 1);
+        when(productComponentsService.getProductsByComponent(anyLong(), anyInt(), anyInt())).thenReturn(products);
+
+        this.mockMvc
+                .perform(get(ENDPOINT + "?componentId=" + componentId))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().json(getProductListResponseAsString()));
+    }
+
+    @Test
+    void getProducts_withoutComponentId_shouldRequestFromProductService() throws Exception {
+        var products = new PageImpl<>(List.of(getProduct()), PageRequest.of(0, 10), 1);
+        when(productService.getItems(anyInt(), anyInt())).thenReturn(products);
+
+        this.mockMvc
+                .perform(get(ENDPOINT))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        verify(productService).getItems(0, 10);
+        verify(productComponentsService, never()).getProductsByComponent(anyLong(), anyInt(), anyInt());
     }
 }

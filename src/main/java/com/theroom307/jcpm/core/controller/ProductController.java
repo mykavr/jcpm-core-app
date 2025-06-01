@@ -59,9 +59,16 @@ public class ProductController extends BaseItemController<Product> {
             @Schema(type = "integer", defaultValue = DEFAULT_PAGE_SIZE,
                     description = "Pagination: the size of the page to be returned, must be greater than 0")
             @Min(value = 1, message = "Page size must be greater than 0")
-            int size
+            int size,
+
+            @RequestParam(required = false)
+            @Schema(type = "integer", description = "Optional component ID to filter products by")
+            @Min(value = 1, message = "Component ID must be greater than zero")
+            Long componentId
     ) {
-        var products = service.getItems(page, size);
+        var products = componentId != null 
+                ? productComponentsService.getProductsByComponent(componentId, page, size)
+                : service.getItems(page, size);
         return mapper.mapProducts(products);
     }
 
