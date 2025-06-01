@@ -311,6 +311,25 @@ class ProductContainsComponentsTests {
                 .andExpect(jsonPath("$.pagination.total").value(0));
     }
 
+    @Test
+    void getProductsByComponent_oneOfTwoProductsContainsComponent_shouldReturnOnlyProductWithComponent() throws Exception {
+        var secondProduct = productRepository.save(TestProductData.getProductToCreate());
+        
+        createProductComponentInRepository(component, DEFAULT_COMPONENT_QUANTITY);
+
+        var endpoint = Endpoint.PRODUCTS.getEndpoint() + "?componentId=" + component.getId();
+
+        mockMvc.perform(get(endpoint))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").isArray())
+                .andExpect(jsonPath("$.data", hasSize(1)))
+                .andExpect(jsonPath("$.pagination.total").value(1))
+                .andExpect(jsonPath("$.pagination.page").value(0))
+                .andExpect(jsonPath("$.pagination.size").value(10))
+                .andExpect(jsonPath("$.data[0].id").value(product.getId()));
+    }
+
     private void createProductComponentInRepository(Product product, Component component, int quantity) {
         var productComponentEntity = ProductComponent.builder()
                 .product(product)
