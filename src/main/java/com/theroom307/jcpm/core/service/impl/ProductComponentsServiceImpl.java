@@ -15,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.time.ZonedDateTime;
 import java.util.Map;
 
 import static java.util.stream.Collectors.toMap;
@@ -52,6 +53,8 @@ public class ProductComponentsServiceImpl implements ProductComponentsService {
                 .quantity(quantity)
                 .build();
         productComponentRepository.save(productComponent);
+
+        productRepository.updateModified(productId, ZonedDateTime.now());
     }
 
     @Override
@@ -69,6 +72,8 @@ public class ProductComponentsServiceImpl implements ProductComponentsService {
                             );
                         }
                 );
+
+        productRepository.updateModified(productId, ZonedDateTime.now());
     }
 
     @Override
@@ -94,6 +99,8 @@ public class ProductComponentsServiceImpl implements ProductComponentsService {
         var productComponent = productComponentOpt.get();
         productComponent.setQuantity(quantity);
         productComponentRepository.save(productComponent);
+
+        productRepository.updateModified(productId, ZonedDateTime.now());
     }
 
     @Override

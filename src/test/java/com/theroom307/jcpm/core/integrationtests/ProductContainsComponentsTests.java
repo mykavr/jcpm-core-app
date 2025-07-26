@@ -21,8 +21,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.ZonedDateTime;
+import java.util.function.Predicate;
+
 import static com.theroom307.jcpm.core.TestTypes.INTEGRATION_TEST;
 import static com.theroom307.jcpm.core.utils.data.TestData.DEFAULT_COMPONENT_QUANTITY;
+import static java.util.function.Predicate.not;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -64,6 +68,8 @@ class ProductContainsComponentsTests {
 
     @Test
     void addComponentToProduct() throws Exception {
+        var originalProduct = productRepository.findById(product.getId()).orElseThrow();
+
         var endpoint = Endpoint.PRODUCT_COMPONENTS.getEndpoint(product.getId());
         var payload = TestData.getAddComponentRequestBody(component.getId());
 
@@ -74,11 +80,30 @@ class ProductContainsComponentsTests {
                 .andExpect(status().isCreated());
 
         assertThatProductComponentIsSavedInRepository(product, component);
+
+        var updatedProduct = productRepository.findById(product.getId()).orElseThrow();
+
+        assertThat(updatedProduct)
+                .as("The created timestamp should not change")
+                .extracting(Product::getCreated)
+                .matches(isEqualTo(originalProduct.getCreated()),
+                        "should be " + originalProduct.getCreated());
+
+        assertThat(updatedProduct)
+                .as("The modified timestamp should have changed")
+                .extracting(Product::getModified)
+                .matches(not(isEqualTo(originalProduct.getModified())),
+                        "should be after " + originalProduct.getModified())
+                .as("The modified timestamp should be after the original value")
+                .matches((modified) -> modified.isAfter(originalProduct.getModified()),
+                        "should be after " + originalProduct.getModified());
     }
 
     @Test
     void removeComponentFromProduct() throws Exception {
         createProductComponentInRepository();
+
+        var originalProduct = productRepository.findById(product.getId()).orElseThrow();
 
         var endpoint = Endpoint.PRODUCT_COMPONENT.getEndpoint(product.getId(), component.getId());
 
@@ -89,6 +114,23 @@ class ProductContainsComponentsTests {
         assertThat(productComponentRepository.findProductComponent(product.getId(), component.getId()))
                 .as("Product-component relation should be removed from the repository")
                 .isNotPresent();
+
+        var updatedProduct = productRepository.findById(product.getId()).orElseThrow();
+
+        assertThat(updatedProduct)
+                .as("The created timestamp should not change")
+                .extracting(Product::getCreated)
+                .matches(isEqualTo(originalProduct.getCreated()),
+                        "should be " + originalProduct.getCreated());
+
+        assertThat(updatedProduct)
+                .as("The modified timestamp should have changed")
+                .extracting(Product::getModified)
+                .matches(not(isEqualTo(originalProduct.getModified())),
+                        "should be after " + originalProduct.getModified())
+                .as("The modified timestamp should be after the original value")
+                .matches((modified) -> modified.isAfter(originalProduct.getModified()),
+                        "should be after " + originalProduct.getModified());
     }
 
     @Test
@@ -100,6 +142,8 @@ class ProductContainsComponentsTests {
         assertThat(initialProductComponent.getQuantity())
                 .as("Initial quantity should be %d", DEFAULT_COMPONENT_QUANTITY)
                 .isEqualTo(DEFAULT_COMPONENT_QUANTITY);
+
+        var originalProduct = productRepository.findById(product.getId()).orElseThrow();
 
         int newQuantity = 5;
 
@@ -120,6 +164,23 @@ class ProductContainsComponentsTests {
         assertThat(updatedProductComponent.getQuantity())
                 .as("Quantity should be updated to the new value")
                 .isEqualTo(newQuantity);
+
+        var updatedProduct = productRepository.findById(product.getId()).orElseThrow();
+
+        assertThat(updatedProduct)
+                .as("The created timestamp should not change")
+                .extracting(Product::getCreated)
+                .matches(isEqualTo(originalProduct.getCreated()),
+                        "should be " + originalProduct.getCreated());
+
+        assertThat(updatedProduct)
+                .as("The modified timestamp should have changed")
+                .extracting(Product::getModified)
+                .matches(not(isEqualTo(originalProduct.getModified())),
+                        "should be after " + originalProduct.getModified())
+                .as("The modified timestamp should be after the original value")
+                .matches((modified) -> modified.isAfter(originalProduct.getModified()),
+                        "should be after " + originalProduct.getModified());
     }
 
     @Test
@@ -343,5 +404,9 @@ class ProductContainsComponentsTests {
         assertThat(productComponentRepository.findProductComponent(product.getId(), component.getId()))
                 .as("Product-component relation should be saved in the repository")
                 .isPresent();
+    }
+
+    private Predicate<ZonedDateTime> isEqualTo(ZonedDateTime expected) {
+        return expected::isEqual;
     }
 }
