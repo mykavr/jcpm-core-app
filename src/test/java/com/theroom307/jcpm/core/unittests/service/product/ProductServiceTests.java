@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -125,11 +126,17 @@ class ProductServiceTests {
         var editedProduct = new Product();
         editedProduct.setName("New Product Name");
 
-        when(productRepository.findById(anyLong())).thenReturn(Optional.of(getProduct()));
+        var originalProduct = getProduct();
+        when(productRepository.findById(anyLong())).thenReturn(Optional.of(originalProduct));
 
         productService.editItem(VALID_PRODUCT_ID, editedProduct);
 
-        verify(productRepository).updateNameById("New Product Name", VALID_PRODUCT_ID);
+        var captor = ArgumentCaptor.forClass(Product.class);
+        verify(productRepository).save(captor.capture());
+
+        var savedProduct = captor.getValue();
+        assertThat(savedProduct.getName()).isEqualTo("New Product Name");
+        assertThat(savedProduct.getDescription()).isEqualTo(originalProduct.getDescription());
     }
 
     @Test
@@ -137,11 +144,17 @@ class ProductServiceTests {
         var editedProduct = new Product();
         editedProduct.setDescription("New product description.");
 
-        when(productRepository.findById(anyLong())).thenReturn(Optional.of(getProduct()));
+        var originalProduct = getProduct();
+        when(productRepository.findById(anyLong())).thenReturn(Optional.of(originalProduct));
 
         productService.editItem(VALID_PRODUCT_ID, editedProduct);
 
-        verify(productRepository).updateDescriptionById("New product description.", VALID_PRODUCT_ID);
+        var captor = ArgumentCaptor.forClass(Product.class);
+        verify(productRepository).save(captor.capture());
+
+        Product savedProduct = captor.getValue();
+        assertThat(savedProduct.getName()).isEqualTo(originalProduct.getName());
+        assertThat(savedProduct.getDescription()).isEqualTo("New product description.");
     }
 
     @Test
@@ -150,12 +163,17 @@ class ProductServiceTests {
         editedProduct.setName("New Product Name");
         editedProduct.setDescription("New product description.");
 
-        when(productRepository.findById(anyLong())).thenReturn(Optional.of(getProduct()));
+        var originalProduct = getProduct();
+        when(productRepository.findById(anyLong())).thenReturn(Optional.of(originalProduct));
 
         productService.editItem(VALID_PRODUCT_ID, editedProduct);
 
-        verify(productRepository).updateNameById("New Product Name", VALID_PRODUCT_ID);
-        verify(productRepository).updateDescriptionById("New product description.", VALID_PRODUCT_ID);
+        var captor = ArgumentCaptor.forClass(Product.class);
+        verify(productRepository).save(captor.capture());
+
+        Product savedProduct = captor.getValue();
+        assertThat(savedProduct.getName()).isEqualTo("New Product Name");
+        assertThat(savedProduct.getDescription()).isEqualTo("New product description.");
     }
 
     @Test
