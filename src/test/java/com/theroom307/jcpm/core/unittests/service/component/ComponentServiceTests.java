@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -125,11 +126,17 @@ class ComponentServiceTests {
         var editedComponent = new Component();
         editedComponent.setName("New Component Name");
 
-        when(componentRepository.findById(anyLong())).thenReturn(Optional.of(getComponent()));
+        var originalComponent = getComponent();
+        when(componentRepository.findById(anyLong())).thenReturn(Optional.of(originalComponent));
 
         componentService.editItem(VALID_COMPONENT_ID, editedComponent);
 
-        verify(componentRepository).updateNameById("New Component Name", VALID_COMPONENT_ID);
+        var captor = ArgumentCaptor.forClass(Component.class);
+        verify(componentRepository).save(captor.capture());
+
+        Component savedComponent = captor.getValue();
+        assertThat(savedComponent.getName()).isEqualTo("New Component Name");
+        assertThat(savedComponent.getDescription()).isEqualTo(originalComponent.getDescription());
     }
 
     @Test
@@ -137,11 +144,17 @@ class ComponentServiceTests {
         var editedComponent = new Component();
         editedComponent.setDescription("New component description.");
 
-        when(componentRepository.findById(anyLong())).thenReturn(Optional.of(getComponent()));
+        var originalComponent = getComponent();
+        when(componentRepository.findById(anyLong())).thenReturn(Optional.of(originalComponent));
 
         componentService.editItem(VALID_COMPONENT_ID, editedComponent);
 
-        verify(componentRepository).updateDescriptionById("New component description.", VALID_COMPONENT_ID);
+        var captor = ArgumentCaptor.forClass(Component.class);
+        verify(componentRepository).save(captor.capture());
+
+        Component savedComponent = captor.getValue();
+        assertThat(savedComponent.getName()).isEqualTo(originalComponent.getName());
+        assertThat(savedComponent.getDescription()).isEqualTo("New component description.");
     }
 
     @Test
@@ -150,12 +163,17 @@ class ComponentServiceTests {
         editedComponent.setName("New Component Name");
         editedComponent.setDescription("New component description.");
 
-        when(componentRepository.findById(anyLong())).thenReturn(Optional.of(getComponent()));
+        var originalComponent = getComponent();
+        when(componentRepository.findById(anyLong())).thenReturn(Optional.of(originalComponent));
 
         componentService.editItem(VALID_COMPONENT_ID, editedComponent);
 
-        verify(componentRepository).updateNameById("New Component Name", VALID_COMPONENT_ID);
-        verify(componentRepository).updateDescriptionById("New component description.", VALID_COMPONENT_ID);
+        var captor = ArgumentCaptor.forClass(Component.class);
+        verify(componentRepository).save(captor.capture());
+
+        Component savedComponent = captor.getValue();
+        assertThat(savedComponent.getName()).isEqualTo("New Component Name");
+        assertThat(savedComponent.getDescription()).isEqualTo("New component description.");
     }
 
     @Test

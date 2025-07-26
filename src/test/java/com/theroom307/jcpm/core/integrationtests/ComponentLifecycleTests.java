@@ -12,11 +12,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.ZonedDateTime;
-import java.util.function.Predicate;
-
 import static com.theroom307.jcpm.core.TestTypes.INTEGRATION_TEST;
 import static com.theroom307.jcpm.core.utils.data.TestComponentData.*;
+import static java.util.function.Predicate.not;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -101,6 +99,8 @@ class ComponentLifecycleTests {
         component.setDescription("Component description before editing.");
         final var originalComponent = componentRepository.save(component);
 
+        Thread.sleep(10); // to test the modified timestamp
+
         mockMvc
                 .perform(patch(String.format(COMPONENT_ENDPOINT, originalComponent.getId()))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -121,23 +121,18 @@ class ComponentLifecycleTests {
                 .hasFieldOrPropertyWithValue("description", getComponent().getDescription())
                 .as("The created timestamp should not change")
                 .extracting(Component::getCreated)
-                .matches(isEqualTo(originalComponent.getCreated()),
+                .matches(originalComponent.getCreated()::isEqual,
                         "should be " + originalComponent.getCreated());
 
-        // TODO: Test the modified timestamp updating after JCPM-53 is fixed
-//        assertThat(editedComponent)
-//                .get()
-//                .extracting(Component::getModified)
-//                .as("The modified timestamp should have changed")
-//                .matches(not(isEqualTo(originalComponent.getModified())),
-//                        "should be after " + originalComponent.getModified())
-//                .as("The modified timestamp should be after the original value")
-//                .matches((modified) -> modified.isAfter(originalComponent.getModified()),
-//                        "should be after " + originalComponent.getModified());
-    }
-
-    private Predicate<ZonedDateTime> isEqualTo(ZonedDateTime expected) {
-        return (actual) -> actual.toEpochSecond() == expected.toEpochSecond();
+        assertThat(editedComponent)
+                .get()
+                .extracting(Component::getModified)
+                .as("The modified timestamp should have changed")
+                .matches(not(originalComponent.getModified()::isEqual),
+                        "should be after " + originalComponent.getModified())
+                .as("The modified timestamp should be after the original value")
+                .matches((modified) -> modified.isAfter(originalComponent.getModified()),
+                        "should be after " + originalComponent.getModified());
     }
 
     @Test
