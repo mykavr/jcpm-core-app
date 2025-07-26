@@ -12,11 +12,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.ZonedDateTime;
-import java.util.function.Predicate;
-
 import static com.theroom307.jcpm.core.TestTypes.INTEGRATION_TEST;
 import static com.theroom307.jcpm.core.utils.data.TestProductData.*;
+import static java.util.function.Predicate.not;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -101,6 +99,8 @@ class ProductLifecycleTests {
         product.setDescription("Product description before editing.");
         final var originalProduct = productRepository.save(product);
 
+        Thread.sleep(10); // to test the modified timestamp
+
         mockMvc
                 .perform(patch(String.format(PRODUCT_ENDPOINT, originalProduct.getId()))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -121,23 +121,18 @@ class ProductLifecycleTests {
                 .hasFieldOrPropertyWithValue("description", getProduct().getDescription())
                 .as("The created timestamp should not change")
                 .extracting(Product::getCreated)
-                .matches(isEqualTo(originalProduct.getCreated()),
+                .matches(originalProduct.getCreated()::isEqual,
                         "should be " + originalProduct.getCreated());
 
-        // TODO: Test the modified timestamp updating after JCPM-53 is fixed
-//        assertThat(editedProduct)
-//                .get()
-//                .extracting(Product::getModified)
-//                .as("The modified timestamp should have changed")
-//                .matches(not(isEqualTo(originalProduct.getModified())),
-//                        "should be after " + originalProduct.getModified())
-//                .as("The modified timestamp should be after the original value")
-//                .matches((modified) -> modified.isAfter(originalProduct.getModified()),
-//                        "should be after " + originalProduct.getModified());
-    }
-
-    private Predicate<ZonedDateTime> isEqualTo(ZonedDateTime expected) {
-        return (actual) -> actual.toEpochSecond() == expected.toEpochSecond();
+        assertThat(editedProduct)
+                .get()
+                .extracting(Product::getModified)
+                .as("The modified timestamp should have changed")
+                .matches(not(originalProduct.getModified()::isEqual),
+                        "should be after " + originalProduct.getModified())
+                .as("The modified timestamp should be after the original value")
+                .matches((modified) -> modified.isAfter(originalProduct.getModified()),
+                        "should be after " + originalProduct.getModified());
     }
 
     @Test

@@ -74,14 +74,22 @@ public abstract class ItemServiceImpl<T extends Item> implements ItemService<T> 
         var item = repository.findById(id)
                 .orElseThrow(() -> new ItemNotFoundException(itemType, id));
 
+        boolean changed = false;
+
         if (newName != null && !item.getName().equals(newName)) {
             log.info("Setting the {} name for {} to '{}'", itemType, id, newName);
-            repository.updateNameById(newName, id);
+            item.setName(newName);
+            changed = true;
         }
 
         if (newDescription != null && !item.getDescription().equals(newDescription)) {
             log.info("Setting the {} description for {} to '{}'", itemType, id, newDescription);
-            repository.updateDescriptionById(newDescription, id);
+            item.setDescription(newDescription);
+            changed = true;
+        }
+
+        if (changed) {
+            repository.save(item);
         }
     }
 
